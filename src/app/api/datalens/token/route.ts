@@ -28,11 +28,17 @@ export async function GET() {
     // Формируем токен: timestamp:embedId:signature
     const token = `${message}:${signature}`;
 
+    // Логирование для отладки (в продакшене лучше убрать или использовать env переменную)
+    console.log("Generated token:", token.substring(0, 50) + "...");
+
     return NextResponse.json({ token });
   } catch (error) {
     console.error("Error generating DataLens token:", error);
     return NextResponse.json(
-      { error: "Failed to generate token" },
+      { 
+        error: "Failed to generate token",
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }
