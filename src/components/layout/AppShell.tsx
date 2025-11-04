@@ -15,7 +15,7 @@ export function AppShell({ children, title }: AppShellProps) {
       <Header title={title} />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 bg-[#f0f2f5] min-h-screen">{children}</main>
+        <main className="flex-1 bg-[#f0f2f5] min-h-screen p-6">{children}</main>
       </div>
     </div>
   );

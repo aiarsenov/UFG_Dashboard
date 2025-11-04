@@ -22,7 +22,7 @@ export function Subnav() {
   const items = competitorsItems;
 
   return (
-    <div className="bg-white rounded-xl mx-2 mt-2 px-6">
+    <div className="bg-white rounded-xl px-6">
       <div className="flex gap-6 text-sm">
         {items.map((item) => {
           const active = pathname === item.href;
