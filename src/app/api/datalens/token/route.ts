@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 export async function GET() {
   let privateKey = process.env.DATALENS_PRIVATE_KEY;
-  const embedId = process.env.DATALENS_EMBED_ID || "s49hscam1mbed";
+  let embedId = process.env.DATALENS_EMBED_ID || "s49hscam1mbed";
 
   if (!privateKey) {
     return NextResponse.json(
@@ -14,8 +14,9 @@ export async function GET() {
   }
 
   try {
-    // Нормализуем приватный ключ
+    // Нормализуем приватный ключ и embedId
     privateKey = privateKey.replace(/\\n/g, "\n");
+    embedId = embedId.trim().replace(/\n/g, "").replace(/\r/g, "");
 
     // Создаем JWT токен согласно документации DataLens
     const now = Math.floor(Date.now() / 1000);
@@ -32,6 +33,7 @@ export async function GET() {
     });
 
     console.log("Generated JWT token length:", token.length);
+    console.log("Embed ID used:", embedId);
 
     return NextResponse.json({ token });
   } catch (error) {
