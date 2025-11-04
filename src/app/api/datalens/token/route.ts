@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
+import { SignJWT, importPKCS8 } from "jose";
 
 export async function GET() {
   let privateKey = process.env.DATALENS_PRIVATE_KEY;
-  let embedId = process.env.DATALENS_EMBED_ID || "s49hscam1mbed";
+  let embedId = process.env.DATALENS_EMBED_ID || "kw1mro94lpou5";
 
   if (!privateKey) {
     return NextResponse.json(
@@ -17,24 +17,30 @@ export async function GET() {
     privateKey = privateKey.replace(/\\n/g, "\n");
     embedId = embedId.trim().replace(/\n/g, "").replace(/\r/g, "");
 
-    // Генерируем подпись согласно документации DataLens
-    // Формат: timestamp:embedId:signature (НЕ JWT!)
-    const timestamp = Math.floor(Date.now() / 1000);
-    const message = `${timestamp}:${embedId}`;
+    // Создаем JWT токен согласно документации DataLens
+    // Алгоритм: PS256
+    const now = Math.floor(Date.now() / 1000);
+    
+    const payload = {
+      embedId: embedId,
+      iat: now,
+      exp: now + 3600, // 1 час (максимум 10 часов)
+      dlEmbedService: "YC_DATALENS_EMBEDDING_SERVICE_MARK",
+      params: {},
+    };
 
-    // Создаем подпись используя RSA SHA-256
-    const sign = crypto.createSign("RSA-SHA256");
-    sign.update(message, "utf8");
-    sign.end();
+    // Импортируем приватный ключ в формате PKCS8
+    const key = await importPKCS8(privateKey, "PS256");
 
-    const signature = sign.sign(privateKey, "base64");
+    // Подписываем JWT используя PS256
+    const token = await new SignJWT(payload)
+      .setProtectedHeader({ alg: "PS256" })
+      .setIssuedAt(now)
+      .setExpirationTime(now + 3600)
+      .sign(key);
 
-    // Формируем токен: timestamp:embedId:signature (без переносов строк)
-    const token = `${message}:${signature}`.replace(/\n/g, "").replace(/\r/g, "");
-
-    console.log("Generated token length:", token.length);
+    console.log("Generated JWT token length:", token.length);
     console.log("Embed ID used:", embedId);
-    console.log("Token format:", `${timestamp}:${embedId}:${signature.substring(0, 20)}...`);
 
     return NextResponse.json({ token });
   } catch (error) {
