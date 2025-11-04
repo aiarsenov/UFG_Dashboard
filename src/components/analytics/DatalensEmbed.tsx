@@ -44,6 +44,10 @@ export function DatalensEmbed({
     // Проверяем, загрузился ли iframe
     console.log("DataLens iframe loaded");
   };
+  
+  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(token)}`;
+  
+  console.log("DataLens iframe src:", src.substring(0, 100) + "...");
 
   const handleIframeError = () => {
     setLoadError("Ошибка загрузки iframe");
