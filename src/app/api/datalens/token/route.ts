@@ -36,10 +36,10 @@ export async function GET() {
     // Если ключ в формате PKCS1, конвертируем в PKCS8
     if (keyPem.includes("BEGIN RSA PRIVATE KEY")) {
       const privateKeyForge = forge.pki.privateKeyFromPem(keyPem);
-      keyPem = forge.pki.privateKeyToPem(privateKeyForge);
-      // Заменяем заголовок на PKCS8
-      keyPem = keyPem.replace("BEGIN RSA PRIVATE KEY", "BEGIN PRIVATE KEY");
-      keyPem = keyPem.replace("END RSA PRIVATE KEY", "END PRIVATE KEY");
+      // Конвертируем в ASN.1 структуру PKCS8
+      const rsaPrivateKey = forge.pki.privateKeyToAsn1(privateKeyForge);
+      const privateKeyInfo = forge.pki.wrapRsaPrivateKey(rsaPrivateKey);
+      keyPem = forge.pki.privateKeyInfoToPem(privateKeyInfo);
     }
 
     // Импортируем приватный ключ в формате PKCS8
@@ -67,4 +67,3 @@ export async function GET() {
     );
   }
 }
-
