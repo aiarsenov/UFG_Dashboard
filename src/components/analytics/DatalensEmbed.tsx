@@ -81,7 +81,7 @@ export function DatalensEmbed({
     );
   }
 
-  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(token)}`;
+  const src = `https://datalens.ru/embeds/dash/${dashboardId || "s49hscam1mbed"}?dl_embed_token=${encodeURIComponent(token)}`;
 
   return (
     <div className="w-full">
