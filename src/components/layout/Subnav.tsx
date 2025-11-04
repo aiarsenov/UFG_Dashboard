@@ -6,20 +6,33 @@ import { cn } from "@/lib/utils";
 
 type SubnavItem = { href: string; label: string };
 
-const competitorsItems: SubnavItem[] = [
-  { href: "/analytics/market-competitors", label: "Динамика" },
-  { href: "/analytics/market-competitors/compare", label: "Сравнение" },
-  { href: "/analytics/market-competitors/details", label: "Детализация" },
+const getSubnavItems = (basePath: string): SubnavItem[] => [
+  { href: basePath, label: "Динамика" },
+  { href: `${basePath}/compare`, label: "Сравнение" },
+  { href: `${basePath}/details`, label: "Детализация" },
 ];
 
 export function Subnav() {
   const pathname = usePathname();
 
-  // Отображаем сабнавигацию только в ветке "Рынок и конкуренты"
-  const shouldShow = pathname?.startsWith("/analytics/market-competitors");
-  if (!shouldShow) return null;
+  // Определяем базовый путь для текущей страницы аналитики
+  const analyticsPaths = [
+    "/analytics/key-metrics",
+    "/analytics/scenario-analysis",
+    "/analytics/market-competitors",
+    "/analytics/sales-profit",
+    "/analytics/sales-funnel",
+    "/analytics/ads-efficiency",
+    "/analytics/abc-xyz",
+  ];
 
-  const items = competitorsItems;
+  const currentBasePath = analyticsPaths.find((path) =>
+    pathname?.startsWith(path)
+  );
+
+  if (!currentBasePath) return null;
+
+  const items = getSubnavItems(currentBasePath);
 
   return (
     <div className="bg-white rounded-xl px-6">

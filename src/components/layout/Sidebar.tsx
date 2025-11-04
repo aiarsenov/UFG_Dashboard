@@ -43,7 +43,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-[270px] shrink-0 bg-white text-[#111] rounded-tr-2xl rounded-br-2xl m-2 p-5 space-y-4">
+    <aside className="w-[270px] shrink-0 bg-white text-[#111] rounded-tr-2xl rounded-br-2xl m-2 p-5 space-y-4 min-h-[calc(100vh-80px)]">
       <nav className="space-y-6">
         <div>
           <div className="text-sm font-semibold text-[#555] mb-3">Аналитика</div>
