@@ -44,10 +44,6 @@ export function DatalensEmbed({
     // Проверяем, загрузился ли iframe
     console.log("DataLens iframe loaded");
   };
-  
-  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(token)}`;
-  
-  console.log("DataLens iframe src:", src.substring(0, 100) + "...");
 
   const handleIframeError = () => {
     setLoadError("Ошибка загрузки iframe");
@@ -85,7 +81,9 @@ export function DatalensEmbed({
     );
   }
 
-  const src = `https://datalens.ru/embeds/dash/${dashboardId || "s49hscam1mbed"}?dl_embed_token=${encodeURIComponent(token)}`;
+  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(token)}`;
+  
+  console.log("DataLens iframe src:", src.substring(0, 100) + "...");
 
   return (
     <div className="w-full">
