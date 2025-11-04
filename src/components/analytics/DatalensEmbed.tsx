@@ -1,31 +1,64 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 type Props = {
-  token?: string;
+  dashboardId?: string;
   width?: number | string;
   height?: number | string;
 };
 
-export function DatalensEmbed({ token, width = "100%", height = 800 }: Props) {
-  // Токен должен быть передан через переменную окружения или пропс
-  // Для продакшна: установите NEXT_PUBLIC_DATALENS_TOKEN в Vercel Environment Variables
-  const resolvedToken =
-    token || process.env.NEXT_PUBLIC_DATALENS_TOKEN || "";
+export function DatalensEmbed({
+  dashboardId,
+  width = "100%",
+  height = 800,
+}: Props) {
+  const [token, setToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!resolvedToken) {
+  useEffect(() => {
+    async function fetchToken() {
+      try {
+        const response = await fetch("/api/datalens/token");
+        if (!response.ok) {
+          throw new Error("Failed to fetch token");
+        }
+        const data = await response.json();
+        if (data.token) {
+          setToken(data.token);
+        } else {
+          setError(data.error || "Token not received");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      }
+    }
+
+    fetchToken();
+  }, []);
+
+  if (error) {
     return (
       <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <div className="text-center">
-          <p className="text-gray-600 mb-2">Токен DataLens не настроен</p>
-          <p className="text-sm text-gray-500">
-            Установите переменную NEXT_PUBLIC_DATALENS_TOKEN
-          </p>
+          <p className="text-gray-600 mb-2">Ошибка загрузки дашборда</p>
+          <p className="text-sm text-gray-500">{error}</p>
         </div>
       </div>
     );
   }
 
-  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(resolvedToken)}`;
+  if (!token) {
+    return (
+      <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+        <div className="text-center">
+          <p className="text-gray-600 mb-2">Загрузка дашборда...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(token)}`;
 
   return (
     <iframe
