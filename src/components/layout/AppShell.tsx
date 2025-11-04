@@ -17,7 +17,7 @@ export function AppShell({ children, title }: AppShellProps) {
       <Subnav />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 bg-[#f0f2f5] min-h-screen">{children}</main>
       </div>
     </div>
   );
