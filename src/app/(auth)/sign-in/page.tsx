@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export default function SignInPage() {
+function SignInForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      setStatus(`Ошибка авторизации: ${decodeURIComponent(error)}`);
+    }
+  }, [searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,9 +46,21 @@ export default function SignInPage() {
           />
         </label>
         <Button type="submit" className="w-full">Получить ссылку</Button>
-        {status && <p className="text-sm text-gray-600">{status}</p>}
+        {status && (
+          <p className={`text-sm ${status.includes("Ошибка") ? "text-red-600" : "text-gray-600"}`}>
+            {status}
+          </p>
+        )}
       </form>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#24244a]">Загрузка...</div>}>
+      <SignInForm />
+    </Suspense>
   );
 }
 
