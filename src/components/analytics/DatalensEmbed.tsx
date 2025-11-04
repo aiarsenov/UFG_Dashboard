@@ -81,7 +81,8 @@ export function DatalensEmbed({
     );
   }
 
-  const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(token)}`;
+  const embedId = dashboardId || "s49hscam1mbed";
+  const src = `https://datalens.ru/embeds/dash/${embedId}#dl_embed_token=${encodeURIComponent(token)}`;
   
   console.log("DataLens iframe src:", src.substring(0, 100) + "...");
 
