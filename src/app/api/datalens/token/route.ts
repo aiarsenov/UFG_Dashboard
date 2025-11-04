@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SignJWT, importPKCS8 } from "jose";
+import forge from "node-forge";
 
 export async function GET() {
   let privateKey = process.env.DATALENS_PRIVATE_KEY;
@@ -29,8 +30,20 @@ export async function GET() {
       params: {},
     };
 
+    // Конвертируем RSA PRIVATE KEY (PKCS1) в PKCS8 для библиотеки jose
+    let keyPem = privateKey;
+    
+    // Если ключ в формате PKCS1, конвертируем в PKCS8
+    if (keyPem.includes("BEGIN RSA PRIVATE KEY")) {
+      const privateKeyForge = forge.pki.privateKeyFromPem(keyPem);
+      keyPem = forge.pki.privateKeyToPem(privateKeyForge);
+      // Заменяем заголовок на PKCS8
+      keyPem = keyPem.replace("BEGIN RSA PRIVATE KEY", "BEGIN PRIVATE KEY");
+      keyPem = keyPem.replace("END RSA PRIVATE KEY", "END PRIVATE KEY");
+    }
+
     // Импортируем приватный ключ в формате PKCS8
-    const key = await importPKCS8(privateKey, "PS256");
+    const key = await importPKCS8(keyPem, "PS256");
 
     // Подписываем JWT используя PS256
     const token = await new SignJWT(payload)
