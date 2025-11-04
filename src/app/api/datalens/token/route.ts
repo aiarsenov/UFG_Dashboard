@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 
 export async function GET() {
-  const privateKey = process.env.DATALENS_PRIVATE_KEY;
+  let privateKey = process.env.DATALENS_PRIVATE_KEY;
   const embedId = process.env.DATALENS_EMBED_ID || "s49hscam1mbed";
 
   if (!privateKey) {
@@ -13,6 +13,9 @@ export async function GET() {
   }
 
   try {
+    // Нормализуем приватный ключ - убираем лишние пробелы и переносы строк
+    privateKey = privateKey.replace(/\\n/g, "\n");
+
     // Генерируем подпись согласно документации DataLens
     // Формат: timestamp + embedId
     const timestamp = Math.floor(Date.now() / 1000);
@@ -20,16 +23,17 @@ export async function GET() {
 
     // Создаем подпись используя RSA SHA-256
     const sign = crypto.createSign("RSA-SHA256");
-    sign.update(message);
+    sign.update(message, "utf8");
     sign.end();
 
     const signature = sign.sign(privateKey, "base64");
 
-    // Формируем токен: timestamp:embedId:signature
-    const token = `${message}:${signature}`;
+    // Формируем токен: timestamp:embedId:signature (без переносов строк)
+    const token = `${message}:${signature}`.replace(/\n/g, "").replace(/\r/g, "");
 
-    // Логирование для отладки (в продакшене лучше убрать или использовать env переменную)
-    console.log("Generated token:", token.substring(0, 50) + "...");
+    // Логирование для отладки
+    console.log("Generated token length:", token.length);
+    console.log("Token preview:", token.substring(0, 60) + "...");
 
     return NextResponse.json({ token });
   } catch (error) {
