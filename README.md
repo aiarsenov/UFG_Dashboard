@@ -39,3 +39,4 @@ npm run dev
 ## Авторизация
 
 - Supabase Auth (email magic link). После входа доступны все страницы раздела `/(app)`.
+
