@@ -1,5 +1,11 @@
+import { DatalensEmbed } from "@/components/analytics/DatalensEmbed";
+
 export default function Page() {
-  return <div className="text-white/90">Эффективность рекламы — заглушка</div>;
+  return (
+    <div className="bg-white rounded-xl p-4">
+      <DatalensEmbed />
+    </div>
+  );
 }
 
 
