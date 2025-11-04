@@ -12,7 +12,11 @@ export default function SignInPage() {
     e.preventDefault();
     setStatus("Отправляем ссылку...");
     const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectTo },
+    });
     if (error) setStatus(`Ошибка: ${error.message}`);
     else setStatus("Проверьте почту — мы отправили ссылку для входа.");
   }
