@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
 
 export async function GET() {
   let privateKey = process.env.DATALENS_PRIVATE_KEY;
@@ -18,22 +17,24 @@ export async function GET() {
     privateKey = privateKey.replace(/\\n/g, "\n");
     embedId = embedId.trim().replace(/\n/g, "").replace(/\r/g, "");
 
-    // Создаем JWT токен согласно документации DataLens
-    const now = Math.floor(Date.now() / 1000);
-    const payload = {
-      iss: embedId, // issuer - идентификатор эмбеддинга
-      sub: embedId, // subject - идентификатор дашборда
-      iat: now, // issued at
-      exp: now + 3600, // expiration (1 час)
-    };
+    // Генерируем подпись согласно документации DataLens
+    // Формат: timestamp:embedId:signature (НЕ JWT!)
+    const timestamp = Math.floor(Date.now() / 1000);
+    const message = `${timestamp}:${embedId}`;
 
-    // Подписываем JWT используя RSA
-    const token = jwt.sign(payload, privateKey, {
-      algorithm: "RS256",
-    });
+    // Создаем подпись используя RSA SHA-256
+    const sign = crypto.createSign("RSA-SHA256");
+    sign.update(message, "utf8");
+    sign.end();
 
-    console.log("Generated JWT token length:", token.length);
+    const signature = sign.sign(privateKey, "base64");
+
+    // Формируем токен: timestamp:embedId:signature (без переносов строк)
+    const token = `${message}:${signature}`.replace(/\n/g, "").replace(/\r/g, "");
+
+    console.log("Generated token length:", token.length);
     console.log("Embed ID used:", embedId);
+    console.log("Token format:", `${timestamp}:${embedId}:${signature.substring(0, 20)}...`);
 
     return NextResponse.json({ token });
   } catch (error) {
