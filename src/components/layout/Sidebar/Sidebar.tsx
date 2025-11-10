@@ -4,22 +4,21 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-    LineChart,
-    BarChartBig,
-    ShoppingCart,
-    Zap,
-    ClipboardList,
-    TrendingUp,
-    Grid3X3,
-    Calculator,
-    Boxes,
-    Eye,
-} from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 import "./Sidebar.scss";
+
+import AsideMenu from "@/assets/icons/aside-menu.svg";
+import BarChart from "@/assets/icons/bar-chart.svg";
+import Boxes from "@/assets/icons/boxes.svg";
+import Calculator from "@/assets/icons/calculator.svg";
+import ClipboardList from "@/assets/icons/clipboard-list.svg";
+import Eye from "@/assets/icons/eye.svg";
+import LineChart from "@/assets/icons/line-chart.svg";
+import Note from "@/assets/icons/note.svg";
+import ShoppingCart from "@/assets/icons/shopping-cart.svg";
+import TrendingUp from "@/assets/icons/trending-up.svg";
+import Zap from "@/assets/icons/zap.svg";
 
 type NavItem = {
     href: string;
@@ -36,7 +35,7 @@ const analytics: NavItem[] = [
     {
         href: "/analytics/scenario-analysis",
         label: "Сценарный анализ",
-        icon: BarChartBig,
+        icon: BarChart,
     },
     {
         href: "/analytics/market-competitors",
@@ -58,7 +57,7 @@ const analytics: NavItem[] = [
         label: "Эффективность рекламы",
         icon: Zap,
     },
-    { href: "/analytics/abc-xyz", label: "ABC / XYZ", icon: Grid3X3 },
+    { href: "/analytics/abc-xyz", label: "ABC / XYZ", icon: Note },
 ];
 
 const tools: NavItem[] = [
@@ -143,28 +142,7 @@ export function Sidebar() {
                     }
                 >
                     <div className="aside__icon">
-                        <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M7.97 2v20M14.97 9.44L12.41 12l2.56 2.56"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-                            <path
-                                d="M2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7V9c0-5-2-7-7-7H9C4 2 2 4 2 9z"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-                        </svg>
+                        <AsideMenu className="aside__icon" />
                     </div>
                     <span>Свернуть</span>
                 </button>

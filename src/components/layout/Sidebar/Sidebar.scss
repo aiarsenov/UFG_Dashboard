@@ -1,4 +1,7 @@
 .aside {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     width: 100%;
     max-width: 270px;
     flex: 0 0 270px;
@@ -20,6 +23,10 @@
             max-height: 0;
             margin: 0;
         }
+    }
+
+    &__nav {
+        flex-grow: 1;
     }
 
     &__block {
