@@ -1,0 +1,107 @@
+.aside {
+    width: 100%;
+    max-width: 270px;
+    flex: 0 0 270px;
+    padding: 10px 0;
+    background: var(--color-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    transition: all var(--trans);
+    overflow-x: hidden;
+
+    &.minimized {
+        max-width: 84px;
+        flex: 0 0 84px;
+
+        .aside__title,
+        .aside__list-item span,
+        .aside__open-button span {
+            opacity: 0;
+            max-height: 0;
+            margin: 0;
+        }
+    }
+
+    &__block {
+        position: relative;
+        padding: 20px 0;
+
+        &::after {
+            content: "";
+            position: absolute;
+            height: 1px;
+            width: calc(100% - 60px);
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--border);
+        }
+
+        &:last-of-type::after {
+            display: none;
+        }
+    }
+
+    &__title {
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 110%;
+        padding: 0 30px;
+        margin-bottom: 20px;
+        transition: all var(--trans);
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+
+        &-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 30px;
+            color: #302f46;
+            border-left: 3px solid transparent;
+            transition: border var(--trans), color var(--trans);
+
+            &.active,
+            &:hover {
+                border-left: 3px solid var(--color-orange);
+                color: var(--color-orange);
+
+                .aside__icon {
+                    color: var(--color-orange);
+                }
+            }
+
+            span {
+                transition: opacity var(--trans);
+                margin-top: 5px;
+                min-width: 180px;
+                max-width: 180px;
+            }
+        }
+    }
+
+    &__icon {
+        flex: 0 0 24px;
+        width: 24px;
+        height: 24px;
+        color: #8c8b98;
+        transition: color var(--trans);
+    }
+
+    &__footer {
+        padding: 20px 30px;
+    }
+
+    &__open-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        span {
+            transition: opacity var(--trans);
+        }
+    }
+}

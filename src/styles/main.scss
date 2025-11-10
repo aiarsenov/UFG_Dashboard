@@ -2,6 +2,7 @@
 
 body {
     font-family: var(--font-inter);
+    background: #8685ad1a;
 }
 
 body *::-webkit-scrollbar,
@@ -17,7 +18,7 @@ body::-webkit-scrollbar-track {
 
 body *::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb {
-    background: var(--color-gray-50);
+    background: #d1d5db;
     border-radius: 4px;
 }
 
@@ -31,14 +32,14 @@ body {
     -ms-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    color: var(--color-gray-100);
+    color: var(--color-main);
     scrollbar-gutter: stable;
 }
 
 .wrapper {
     position: relative;
     max-width: 100%;
-    min-width: $media-sm;
+    min-width: $media-md;
     min-height: 100vh;
     margin: 0 auto;
     overflow: hidden;
@@ -88,4 +89,21 @@ body {
     height: 100%;
     width: 100%;
     object-fit: cover;
+}
+
+.main {
+    position: relative;
+    flex-grow: 1;
+    min-height: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.main-container {
+    margin: 15px 0;
+    display: flex;
+    align-items: stretch;
+    gap: 15px;
+    transition: all var(--trans);
 }

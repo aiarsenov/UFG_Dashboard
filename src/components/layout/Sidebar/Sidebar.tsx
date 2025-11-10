@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
     LineChart,
     BarChartBig,
@@ -14,8 +16,10 @@ import {
     Boxes,
     Eye,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+
 import { cn } from "@/lib/utils";
+
+import "./Sidebar.scss";
 
 type NavItem = {
     href: string;
@@ -74,26 +78,27 @@ const tools: NavItem[] = [
 export function Sidebar() {
     const pathname = usePathname();
 
+    const [menuState, setMenuState] = useState("open");
+
     return (
-        <aside className="aside">
-            <nav className="space-y-6">
-                <div>
-                    <div className="text-sm font-semibold text-[#555] mb-3">
-                        Аналитика
-                    </div>
-                    <ul className="space-y-2">
+        <aside className={`aside ${menuState}`}>
+            <nav className="aside__nav">
+                <div className="aside__block">
+                    <div className="aside__title">Аналитика</div>
+
+                    <ul className="aside__list">
                         {analytics.map((item) => (
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
                                     className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-orange-50",
+                                        "aside__list-item",
                                         pathname?.startsWith(item.href)
-                                            ? "text-[#ff6a2b]"
-                                            : "text-[#222]"
+                                            ? "active"
+                                            : ""
                                     )}
                                 >
-                                    <item.icon className="h-5 w-5 opacity-80" />
+                                    <item.icon className="aside__icon" />
                                     <span>{item.label}</span>
                                 </Link>
                             </li>
@@ -101,25 +106,22 @@ export function Sidebar() {
                     </ul>
                 </div>
 
-                <Separator className="bg-black/10" />
+                <div className="aside__block">
+                    <div className="aside__title">Инструменты</div>
 
-                <div>
-                    <div className="text-sm font-semibold text-[#555] mb-3">
-                        Инструменты
-                    </div>
-                    <ul className="space-y-2">
+                    <ul className="aside__list">
                         {tools.map((item) => (
                             <li key={item.href}>
                                 <Link
                                     href={item.href}
                                     className={cn(
-                                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-orange-50",
+                                        "aside__list-item",
                                         pathname?.startsWith(item.href)
                                             ? "text-[#ff6a2b]"
                                             : "text-[#222]"
                                     )}
                                 >
-                                    <item.icon className="h-5 w-5 opacity-80" />
+                                    <item.icon className="aside__icon" />
                                     <span>{item.label}</span>
                                 </Link>
                             </li>
@@ -127,9 +129,46 @@ export function Sidebar() {
                     </ul>
                 </div>
             </nav>
-            <button className="flex items-center gap-2 text-sm text-[#666] hover:text-[#111]">
-                <span>Свернуть</span>
-            </button>
+
+            <div className="aside__footer">
+                <button
+                    className="aside__open-button"
+                    title={
+                        menuState == "open" ? "Свернуть меню" : "Раскрыть меню"
+                    }
+                    onClick={() =>
+                        setMenuState((prev) =>
+                            prev === "open" ? "minimized" : "open"
+                        )
+                    }
+                >
+                    <div className="aside__icon">
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M7.97 2v20M14.97 9.44L12.41 12l2.56 2.56"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                            <path
+                                d="M2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7V9c0-5-2-7-7-7H9C4 2 2 4 2 9z"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </div>
+                    <span>Свернуть</span>
+                </button>
+            </div>
         </aside>
     );
 }
