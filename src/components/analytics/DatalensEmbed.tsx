@@ -93,7 +93,7 @@ export function DatalensEmbed({
         token
     )}`;
 
-    console.log("DataLens iframe src:", src.substring(0, 100) + "...");
+    // console.log("DataLens iframe src:", src.substring(0, 100) + "...");
 
     return (
         <div className="w-full">
