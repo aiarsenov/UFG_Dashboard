@@ -101,6 +101,7 @@ body {
 }
 
 .main-container {
+    flex-grow: 1;
     margin: 15px auto;
     display: flex;
     align-items: stretch;
