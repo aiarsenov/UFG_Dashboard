@@ -1,5 +1,3 @@
 export default function Page() {
-  return <div className="text-white/90">Планирование поставок — заглушка</div>;
+    return <div className="p-4">Планирование поставок</div>;
 }
-
-
