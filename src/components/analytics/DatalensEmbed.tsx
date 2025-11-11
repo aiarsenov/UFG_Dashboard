@@ -99,10 +99,7 @@ export function DatalensEmbed({
     }, [height]);
 
     return (
-        <div
-            className="relative w-full overflow-hidden rounded-xl bg-white"
-            style={{ minHeight: resolvedHeight }}
-        >
+        <div className="frame-container">
             {(!token || !iframeReady) && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white">
                     <span className="h-8 w-8 animate-spin rounded-full border-2 border-[#ff6a2b]/40 border-t-transparent" />
@@ -113,9 +110,15 @@ export function DatalensEmbed({
                 <iframe
                     src={src}
                     width={typeof width === "number" ? String(width) : width}
-                    height={typeof height === "number" ? String(height) : height}
+                    height={
+                        typeof height === "number" ? String(height) : height
+                    }
                     frameBorder={0}
-                    style={{ border: 0, background: "transparent", width: "100%" }}
+                    style={{
+                        border: 0,
+                        background: "transparent",
+                        width: "100%",
+                    }}
                     className={`transition-opacity duration-300 ${
                         iframeReady ? "opacity-100" : "opacity-0"
                     }`}
