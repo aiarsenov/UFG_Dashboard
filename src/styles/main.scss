@@ -108,3 +108,15 @@ body {
     gap: 15px;
     transition: all var(--trans);
 }
+
+.frame-container {
+    width: 100%;
+    min-height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-grow: 1;
+
+    iframe {
+        height: 100%;
+    }
+}
