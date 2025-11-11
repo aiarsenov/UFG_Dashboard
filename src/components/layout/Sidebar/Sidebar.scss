@@ -16,12 +16,19 @@
         max-width: 84px;
         flex: 0 0 84px;
 
-        .aside__title,
-        .aside__list-item span,
-        .aside__open-button span {
+        .aside__title {
             opacity: 0;
             max-height: 0;
             margin: 0;
+        }
+
+        .aside__list-item span,
+        .aside__open-button span {
+            opacity: 0;
+        }
+
+        .aside__open-button svg {
+            transform: scaleX(-1);
         }
     }
 
@@ -69,10 +76,14 @@
             padding: 12px 30px;
             color: #302f46;
             border-left: 3px solid transparent;
-            transition: border var(--trans), color var(--trans);
+            transition: border var(--trans), color var(--trans),
+                background var(--trans);
 
-            &.active,
             &:hover {
+                background: rgba(40, 38, 86, 0.03);
+            }
+
+            &.active {
                 border-left: 3px solid var(--color-orange);
                 color: var(--color-orange);
 
@@ -103,12 +114,28 @@
     }
 
     &__open-button {
+        width: 100%;
+        cursor: pointer;
         display: flex;
         align-items: center;
         gap: 10px;
+        color: var(--color-gray-dark);
+
+        &:hover {
+            span,
+            .aside__icon {
+                font-weight: 500;
+                color: var(--color-main);
+            }
+        }
+
+        svg {
+            transition: transform var(--trans);
+        }
 
         span {
-            transition: opacity var(--trans);
+            color: var(--color-gray-dark);
+            transition: all var(--trans);
         }
     }
 }
