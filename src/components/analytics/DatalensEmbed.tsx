@@ -96,7 +96,10 @@ export function DatalensEmbed({
     // console.log("DataLens iframe src:", src.substring(0, 100) + "...");
 
     return (
-        <div className="w-full">
+        <div
+            className="w-full"
+            style={{ borderRadius: "20px", overflow: "hidden" }}
+        >
             <iframe
                 src={src}
                 width={typeof width === "number" ? String(width) : width}
