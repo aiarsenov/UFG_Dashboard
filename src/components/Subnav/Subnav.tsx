@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
+import "./Subnav.scss";
+
 type SubnavItem = { href: string; label: string };
 
 const getSubnavItems = (basePath: string): SubnavItem[] => [
@@ -35,8 +37,8 @@ export function Subnav() {
     const items = getSubnavItems(currentBasePath);
 
     return (
-        <div className="bg-white px-6">
-            <div className="flex gap-6 text-sm">
+        <div className="tabs">
+            <div className="tabs__list">
                 {items.map((item) => {
                     const active = pathname === item.href;
                     return (
@@ -44,14 +46,11 @@ export function Subnav() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "relative py-4 text-[#6b7280] hover:text-[#111]",
-                                active && "text-[#111]"
+                                "tabs__list-item",
+                                active && "active"
                             )}
                         >
                             {item.label}
-                            {active && (
-                                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#ff6a2b]" />
-                            )}
                         </Link>
                     );
                 })}

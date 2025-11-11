@@ -1,0 +1,45 @@
+.tabs {
+    padding: 30px;
+    background: var(--color-white);
+    border-radius: 20px 20px 0 0;
+
+    &__list {
+        display: flex;
+        align-items: flex-end;
+        gap: 20px;
+        font-weight: 600;
+        font-size: 18px;
+        line-height: 100%;
+        color: var(--color-gray);
+        padding-bottom: 15px;
+        border-bottom: 2px solid #2826561a;
+
+        &-item {
+            transition: color var(--trans);
+            position: relative;
+
+            &::after {
+                content: "";
+                position: absolute;
+                height: 2px;
+                width: 100%;
+                bottom: -17px;
+                left: 0;
+                right: 0;
+                background: transparent;
+                transition: background var(--trans);
+            }
+
+            &:hover,
+            &.active {
+                color: var(--color-main);
+            }
+
+            &.active {
+                &::after {
+                    background: var(--color-orange);
+                }
+            }
+        }
+    }
+}
