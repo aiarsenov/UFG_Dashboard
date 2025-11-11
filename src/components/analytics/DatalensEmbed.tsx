@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
     dashboardId?: string;
@@ -16,6 +16,7 @@ export function DatalensEmbed({
     const [token, setToken] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [iframeReady, setIframeReady] = useState(false);
 
     useEffect(() => {
         async function fetchToken() {
@@ -44,9 +45,13 @@ export function DatalensEmbed({
         fetchToken();
     }, []);
 
+    useEffect(() => {
+        setIframeReady(false);
+    }, [token]);
+
     const handleIframeLoad = () => {
-        // Проверяем, загрузился ли iframe
         console.log("DataLens iframe loaded");
+        setIframeReady(true);
     };
 
     const handleIframeError = () => {
@@ -55,22 +60,10 @@ export function DatalensEmbed({
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-2">
-                        Ошибка загрузки дашборда
-                    </p>
-                    <p className="text-sm text-gray-500">{error}</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!token) {
-        return (
-            <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-2">Загрузка дашборда...</p>
+            <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-red-100 bg-red-50">
+                <div className="text-center text-sm text-red-500">
+                    <p className="mb-1 font-medium">Ошибка загрузки дашборда</p>
+                    <p className="opacity-80">{error}</p>
                 </div>
             </div>
         );
@@ -78,36 +71,60 @@ export function DatalensEmbed({
 
     if (loadError) {
         return (
-            <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-2">Ошибка загрузки</p>
-                    <p className="text-sm text-gray-500">{loadError}</p>
+            <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-red-100 bg-red-50">
+                <div className="text-center text-sm text-red-500">
+                    <p className="mb-1 font-medium">Ошибка загрузки</p>
+                    <p className="opacity-80">{loadError}</p>
                 </div>
             </div>
         );
     }
 
-    const embedId = (dashboardId || "s49hscam1mbed").trim();
-    // Формат URL без ID в пути, только токен в хеше
-    const src = `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(
-        token
-    )}`;
+    const src = useMemo(() => {
+        if (!token) return null;
 
-    // console.log("DataLens iframe src:", src.substring(0, 100) + "...");
+        return `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(
+            token
+        )}`;
+    }, [token]);
+
+    const resolvedHeight = useMemo(() => {
+        if (typeof height === "number") {
+            return `${height}px`;
+        }
+        if (typeof height === "string") {
+            return height;
+        }
+        return "800px";
+    }, [height]);
 
     return (
-        <div className="frame-container">
-            <iframe
-                src={src}
-                width={typeof width === "number" ? String(width) : width}
-                height={typeof height === "number" ? String(height) : height}
-                frameBorder={0}
-                style={{ border: 0, background: "transparent", width: "100%" }}
-                allow="fullscreen"
-                title="DataLens Dashboard"
-                onLoad={handleIframeLoad}
-                onError={handleIframeError}
-            />
+        <div
+            className="relative w-full overflow-hidden rounded-xl bg-white"
+            style={{ minHeight: resolvedHeight }}
+        >
+            {(!token || !iframeReady) && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white">
+                    <span className="h-8 w-8 animate-spin rounded-full border-2 border-[#ff6a2b]/40 border-t-transparent" />
+                </div>
+            )}
+
+            {src && (
+                <iframe
+                    src={src}
+                    width={typeof width === "number" ? String(width) : width}
+                    height={typeof height === "number" ? String(height) : height}
+                    frameBorder={0}
+                    style={{ border: 0, background: "transparent", width: "100%" }}
+                    className={`transition-opacity duration-300 ${
+                        iframeReady ? "opacity-100" : "opacity-0"
+                    }`}
+                    allow="fullscreen"
+                    title="DataLens Dashboard"
+                    onLoad={handleIframeLoad}
+                    onError={handleIframeError}
+                />
+            )}
         </div>
     );
 }
