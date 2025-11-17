@@ -55,8 +55,8 @@ export function Sidebar() {
                                     className={cn(
                                         "aside__list-item",
                                         pathname?.startsWith(item.href)
-                                            ? "text-[#ff6a2b]"
-                                            : "text-[#222]"
+                                            ? "active"
+                                            : ""
                                     )}
                                 >
                                     <item.icon className="aside__icon" />
