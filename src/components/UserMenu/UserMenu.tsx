@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { LogOut } from "lucide-react";
 
 import "./UserMenu.scss";
 
 export default function UserMenu() {
+    const router = useRouter();
     const [userData, setUserData] = useState<{ fio: string | null; email: string | null } | null>(null);
     const [initials, setInitials] = useState("ИИ");
 
@@ -53,6 +56,13 @@ export default function UserMenu() {
         fetchUserData();
     }, []);
 
+    async function handleSignOut() {
+        const supabase = createSupabaseBrowserClient();
+        await supabase.auth.signOut();
+        router.push("/auth/login");
+        router.refresh();
+    }
+
     return (
         <div className="user-menu">
             <Avatar className="user-menu__avatar">
@@ -63,6 +73,15 @@ export default function UserMenu() {
                 <div>{userData?.fio || "Пользователь"}</div>
                 <span>{userData?.email || "email@example.com"}</span>
             </div>
+
+            <button
+                onClick={handleSignOut}
+                className="user-menu__logout"
+                aria-label="Выйти из учетной записи"
+                title="Выйти"
+            >
+                <LogOut size={20} />
+            </button>
         </div>
     );
 }
