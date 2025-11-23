@@ -48,19 +48,14 @@ export default function RegisterPage() {
       setStatus(`Ошибка: ${error.message}`);
       setLoading(false);
     } else {
-      // Проверяем, нужно ли подтверждение email
-      if (data.user && !data.session) {
-        // Email требует подтверждения
-        setStatus("Регистрация успешна! Проверьте почту и подтвердите email.");
-        setLoading(false);
-      } else if (data.session) {
-        // Email уже подтвержден или подтверждение отключено
-        setStatus("Регистрация успешна! Перенаправляем...");
-        setTimeout(() => {
-          router.push("/");
-          router.refresh();
-        }, 1000);
-      }
+      // После регистрации пользователь должен ждать одобрения
+      setStatus("Регистрация успешна! Вашу регистрацию должен одобрить администратор. Вы получите уведомление на email после одобрения.");
+      setLoading(false);
+      // Выходим из сессии, чтобы пользователь не мог войти до одобрения
+      await supabase.auth.signOut();
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 3000);
     }
   }
 

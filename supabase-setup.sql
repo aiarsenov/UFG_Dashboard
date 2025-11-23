@@ -46,12 +46,17 @@ WITH
 -- Функция для создания профиля при регистрации
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+    admin_emails TEXT[] := ARRAY['vasiliy_arsenov@bizan.pro']; -- Админские email
+    is_admin BOOLEAN := NEW.email = ANY(admin_emails);
 BEGIN
-    INSERT INTO public.profiles (id, email, fio)
+    INSERT INTO public.profiles (id, email, fio, approved, banned)
     VALUES (
         NEW.id,
         NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'fio', '')
+        COALESCE(NEW.raw_user_meta_data->>'fio', ''),
+        is_admin, -- Админы автоматически одобрены
+        false     -- По умолчанию не заблокирован
     );
     RETURN NEW;
 END;

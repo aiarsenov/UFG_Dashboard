@@ -19,7 +19,7 @@ export default function LoginPage() {
     setStatus(null);
 
     const supabase = createSupabaseBrowserClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -27,10 +27,27 @@ export default function LoginPage() {
     if (error) {
       setStatus(`Ошибка: ${error.message}`);
       setLoading(false);
-    } else {
-      router.push("/");
-      router.refresh();
+      return;
     }
+
+    if (data.user) {
+      // Проверяем, одобрен ли пользователь
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("approved")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!profile?.approved) {
+        await supabase.auth.signOut();
+        setStatus("Вашу регистрацию должен одобрить администратор. Пожалуйста, подождите.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    router.push("/");
+    router.refresh();
   }
 
   return (

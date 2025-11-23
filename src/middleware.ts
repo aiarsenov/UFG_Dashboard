@@ -95,6 +95,27 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/auth/login", request.url));
     }
 
+    // Проверка одобрения пользователя для всех защищенных маршрутов (кроме админов)
+    if (user && !pathname.startsWith("/auth/") && !pathname.startsWith("/dashboard") && !pathname.startsWith("/admin")) {
+        const userEmail = user.email;
+        const isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
+        
+        if (!isAdmin) {
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("approved")
+                .eq("id", user.id)
+                .single();
+
+            if (!profile?.approved) {
+                // Пользователь не одобрен - редиректим на страницу ожидания
+                if (pathname !== "/waiting-approval") {
+                    return NextResponse.redirect(new URL("/waiting-approval", request.url));
+                }
+            }
+        }
+    }
+
     return supabaseResponse;
 }
 

@@ -43,7 +43,7 @@ export async function GET() {
     // Получаем все профили
     const { data: profiles, error: profilesError } = await adminClient
       .from("profiles")
-      .select("id, fio, email, banned");
+      .select("id, fio, email, banned, approved");
 
     if (profilesError) {
       return NextResponse.json({ error: profilesError.message }, { status: 500 });
@@ -57,6 +57,7 @@ export async function GET() {
         email: authUser.email || "",
         fio: profile?.fio || null,
         banned: profile?.banned || false,
+        approved: profile?.approved || false,
         created_at: authUser.created_at,
       };
     });
