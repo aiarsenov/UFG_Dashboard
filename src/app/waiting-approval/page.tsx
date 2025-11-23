@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isAdminEmail } from "@/lib/admin";
 import Link from "next/link";
 
 export default function WaitingApprovalPage() {
@@ -15,6 +16,15 @@ export default function WaitingApprovalPage() {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+        // Админы всегда могут войти
+        const isAdmin = isAdminEmail(user.email);
+        
+        if (isAdmin) {
+          router.push("/");
+          router.refresh();
+          return;
+        }
+
         const { data: profile } = await supabase
           .from("profiles")
           .select("approved")

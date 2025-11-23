@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isAdminEmail } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -31,18 +32,23 @@ export default function LoginPage() {
     }
 
     if (data.user) {
-      // Проверяем, одобрен ли пользователь
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("approved")
-        .eq("id", data.user.id)
-        .single();
+      // Проверяем, является ли пользователь админом
+      const isAdmin = isAdminEmail(data.user.email);
+      
+      // Если не админ, проверяем одобрение
+      if (!isAdmin) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("approved")
+          .eq("id", data.user.id)
+          .single();
 
-      if (!profile?.approved) {
-        await supabase.auth.signOut();
-        setStatus("Вашу регистрацию должен одобрить администратор. Пожалуйста, подождите.");
-        setLoading(false);
-        return;
+        if (!profile?.approved) {
+          await supabase.auth.signOut();
+          setStatus("Вашу регистрацию должен одобрить администратор. Пожалуйста, подождите.");
+          setLoading(false);
+          return;
+        }
       }
     }
 
