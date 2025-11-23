@@ -48,6 +48,24 @@ export default function RegisterPage() {
       setStatus(`Ошибка: ${error.message}`);
       setLoading(false);
     } else {
+      // Отправляем уведомление админу о новой регистрации
+      if (data.user) {
+        try {
+          await fetch("/api/email/notify-admin", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userEmail: email,
+              userFio: fio,
+            }),
+          });
+        } catch (err) {
+          console.error("Error notifying admin:", err);
+        }
+      }
+
       // После регистрации пользователь должен ждать одобрения
       setStatus("Регистрация успешна! Вашу регистрацию должен одобрить администратор. Вы получите уведомление на email после одобрения.");
       setLoading(false);

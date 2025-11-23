@@ -50,26 +50,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
-    // Отправляем уведомление на email
-    // Используем Supabase для отправки email через функцию отправки
+    // Отправляем уведомление пользователю об одобрении
     try {
-      // Генерируем ссылку для входа и отправляем на email
-      // Это отправит письмо пользователю с информацией об одобрении
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ufg-dashboard.vercel.app";
-      
-      // Отправляем email через Supabase (нужно настроить в Supabase Dashboard)
-      // Authentication → Email Templates → можно создать кастомный шаблон
-      // Или используем встроенную отправку через generateLink
-      const { data: linkData } = await adminClient.auth.admin.generateLink({
-        type: "magiclink",
-        email: email,
-        options: {
-          redirectTo: `${siteUrl}/auth/login`,
+      // Получаем ФИО пользователя
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("fio")
+        .eq("id", userId)
+        .single();
+
+      const userFio = profile?.fio || "";
+
+      // Отправляем email через API route
+      const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "https://ufg-dashboard.vercel.app"}/api/email/send-approval`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          email: email,
+          fio: userFio,
+        }),
       });
 
-      // Логируем для отладки
-      console.log(`User ${email} approved. Login link generated.`);
+      if (!emailResponse.ok) {
+        console.error("Failed to send approval email");
+      } else {
+        console.log(`Approval email sent to ${email}`);
+      }
     } catch (emailErr) {
       console.error("Error sending approval email:", emailErr);
       // Не прерываем процесс, если email не отправился
