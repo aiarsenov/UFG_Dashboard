@@ -41,53 +41,38 @@ function ResetForm() {
           const params = new URLSearchParams(hash.substring(1));
           const access_token = params.get("access_token");
           const token_hash = params.get("token_hash");
+          const refresh_token = params.get("refresh_token");
           const type = params.get("type");
           
           if (type === "recovery") {
-            // Если есть access_token, используем его для установки сессии
-            if (access_token) {
-              // Устанавливаем сессию через setSession
-              const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-                access_token,
-                refresh_token: params.get("refresh_token") || "",
+            // Отправляем токен на сервер для обработки
+            try {
+              const response = await fetch("/api/auth/reset-password", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  access_token,
+                  token_hash,
+                  refresh_token,
+                }),
               });
-              
-              if (sessionError || !sessionData.session) {
-                // Если setSession не сработал, пробуем verifyOtp с token_hash
-                if (token_hash) {
-                  const { data, error: verifyError } = await supabase.auth.verifyOtp({
-                    token_hash,
-                    type: "recovery",
-                  });
-                  
-                  if (verifyError || !data.session) {
-                    setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
-                  } else {
-                    setIsValidSession(true);
-                    window.history.replaceState(null, "", window.location.pathname);
-                  }
-                } else {
-                  setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
-                }
-              } else {
+
+              const data = await response.json();
+
+              if (response.ok && data.success) {
+                // Сессия установлена на сервере, обновляем на клиенте
+                await supabase.auth.getSession();
                 setIsValidSession(true);
+                // Очищаем hash из URL
                 window.history.replaceState(null, "", window.location.pathname);
-              }
-            } else if (token_hash) {
-              // Пробуем verifyOtp с token_hash
-              const { data, error: verifyError } = await supabase.auth.verifyOtp({
-                token_hash,
-                type: "recovery",
-              });
-              
-              if (verifyError || !data.session) {
-                setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
               } else {
-                setIsValidSession(true);
-                window.history.replaceState(null, "", window.location.pathname);
+                setStatus(data.error || "Ссылка недействительна или истекла. Запросите новую ссылку.");
               }
-            } else if (!error) {
-              setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
+            } catch (err) {
+              console.error("Reset password error:", err);
+              setStatus("Ошибка при обработке ссылки. Запросите новую ссылку.");
             }
           } else if (!error) {
             setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
