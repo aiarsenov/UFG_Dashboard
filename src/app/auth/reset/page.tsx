@@ -39,22 +39,55 @@ function ResetForm() {
         if (hash) {
           // Парсим hash для получения токена
           const params = new URLSearchParams(hash.substring(1));
-          const token_hash = params.get("access_token") || params.get("token_hash");
+          const access_token = params.get("access_token");
+          const token_hash = params.get("token_hash");
           const type = params.get("type");
           
-          if (token_hash && type === "recovery") {
-            // Обмениваем токен на сессию
-            const { data, error: verifyError } = await supabase.auth.verifyOtp({
-              token_hash,
-              type: "recovery",
-            });
-            
-            if (verifyError || !data.session) {
-              setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
-            } else {
-              setIsValidSession(true);
-              // Очищаем hash из URL
-              window.history.replaceState(null, "", window.location.pathname);
+          if (type === "recovery") {
+            // Если есть access_token, используем его для установки сессии
+            if (access_token) {
+              // Устанавливаем сессию через setSession
+              const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+                access_token,
+                refresh_token: params.get("refresh_token") || "",
+              });
+              
+              if (sessionError || !sessionData.session) {
+                // Если setSession не сработал, пробуем verifyOtp с token_hash
+                if (token_hash) {
+                  const { data, error: verifyError } = await supabase.auth.verifyOtp({
+                    token_hash,
+                    type: "recovery",
+                  });
+                  
+                  if (verifyError || !data.session) {
+                    setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
+                  } else {
+                    setIsValidSession(true);
+                    window.history.replaceState(null, "", window.location.pathname);
+                  }
+                } else {
+                  setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
+                }
+              } else {
+                setIsValidSession(true);
+                window.history.replaceState(null, "", window.location.pathname);
+              }
+            } else if (token_hash) {
+              // Пробуем verifyOtp с token_hash
+              const { data, error: verifyError } = await supabase.auth.verifyOtp({
+                token_hash,
+                type: "recovery",
+              });
+              
+              if (verifyError || !data.session) {
+                setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
+              } else {
+                setIsValidSession(true);
+                window.history.replaceState(null, "", window.location.pathname);
+              }
+            } else if (!error) {
+              setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
             }
           } else if (!error) {
             setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
@@ -95,7 +128,7 @@ function ResetForm() {
     } else {
       setStatus("Пароль успешно изменен! Перенаправляем...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/");
         router.refresh();
       }, 1000);
     }

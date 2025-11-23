@@ -57,7 +57,7 @@ export default function RegisterPage() {
         // Email уже подтвержден или подтверждение отключено
         setStatus("Регистрация успешна! Перенаправляем...");
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push("/");
           router.refresh();
         }, 1000);
       }

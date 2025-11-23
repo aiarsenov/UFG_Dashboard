@@ -27,13 +27,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/auth/login?error=no_session", url.origin));
   }
 
-  // Если это подтверждение email после регистрации, редиректим на dashboard
+  // Если это подтверждение email после регистрации, редиректим на главную
   if (type === "signup" || type === "email") {
-    return NextResponse.redirect(new URL("/dashboard", url.origin));
+    return NextResponse.redirect(new URL("/", url.origin));
   }
 
-  // По умолчанию редиректим на dashboard
-  return NextResponse.redirect(new URL("/dashboard", url.origin));
+  // По умолчанию редиректим на главную
+  return NextResponse.redirect(new URL("/", url.origin));
 }
 
 
