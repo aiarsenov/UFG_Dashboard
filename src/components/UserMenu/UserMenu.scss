@@ -29,12 +29,12 @@
         background: transparent;
         cursor: pointer;
         border-radius: 8px;
-        color: var(--text-primary, #333);
+        color: #ffffff;
         transition: all 0.2s ease;
 
         &:hover {
-            background: rgba(0, 0, 0, 0.05);
-            color: var(--text-primary, #333);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
         }
 
         &:active {

@@ -15,19 +15,27 @@ export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
 
   // Если это восстановление пароля (recovery)
-  if (type === "recovery" && token_hash) {
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      token_hash,
-      type: "recovery",
-    });
+  if (type === "recovery") {
+    // Проверяем token_hash в query параметрах или в code
+    const recoveryToken = token_hash || code;
+    
+    if (recoveryToken) {
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: recoveryToken,
+        type: "recovery",
+      });
 
-    if (verifyError || !data.session) {
-      console.error("Password reset error:", verifyError);
-      return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+      if (verifyError || !data.session) {
+        console.error("Password reset error:", verifyError);
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+      }
+
+      // Сессия установлена, редиректим на страницу сброса пароля
+      return NextResponse.redirect(new URL("/auth/reset", url.origin));
+    } else {
+      // Если нет токена, редиректим на страницу восстановления с ошибкой
+      return NextResponse.redirect(new URL("/auth/reset?error=no_token", url.origin));
     }
-
-    // Сессия установлена, редиректим на страницу сброса пароля
-    return NextResponse.redirect(new URL("/auth/reset", url.origin));
   }
   
   if (!code) {

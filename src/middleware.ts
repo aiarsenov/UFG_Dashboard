@@ -61,9 +61,9 @@ export async function middleware(request: NextRequest) {
 
     const pathname = request.nextUrl.pathname;
 
-    // Если пользователь залогинен, редиректим с /auth/* на /dashboard
+    // Если пользователь залогинен, редиректим с /auth/* на главную
     if (user && pathname.startsWith("/auth/")) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/", request.url));
     }
 
     // Если пользователь не залогинен, редиректим с защищенных маршрутов на /auth/login
@@ -71,11 +71,19 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/auth/login", request.url));
     }
 
+    // Проверка доступа к dashboard - только для админа
+    if (user && pathname.startsWith("/dashboard")) {
+        const userEmail = user.email;
+        if (!userEmail || !WHITELIST_ADMIN_EMAILS.includes(userEmail)) {
+            return NextResponse.redirect(new URL("/", request.url));
+        }
+    }
+
     // Проверка доступа к админке
     if (user && pathname.startsWith("/admin")) {
         const userEmail = user.email;
         if (!userEmail || !WHITELIST_ADMIN_EMAILS.includes(userEmail)) {
-            return NextResponse.redirect(new URL("/dashboard", request.url));
+            return NextResponse.redirect(new URL("/", request.url));
         }
     }
 
