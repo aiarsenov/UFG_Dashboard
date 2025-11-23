@@ -1,5 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getAdminEmails } from "@/lib/config";
+
+const WHITELIST_ADMIN_EMAILS = getAdminEmails();
 
 export async function middleware(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -52,18 +55,36 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    // Проверяем авторизацию только для защищенных маршрутов
-    if (
-        request.nextUrl.pathname.startsWith("/analytics") ||
-        request.nextUrl.pathname.startsWith("/tools")
-    ) {
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-        if (!user) {
-            return NextResponse.redirect(new URL("/sign-in", request.url));
+    const pathname = request.nextUrl.pathname;
+
+    // Если пользователь залогинен, редиректим с /auth/* на /dashboard
+    if (user && pathname.startsWith("/auth/")) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+
+    // Если пользователь не залогинен, редиректим с защищенных маршрутов на /auth/login
+    if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/profile") || pathname.startsWith("/admin"))) {
+        return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+
+    // Проверка доступа к админке
+    if (user && pathname.startsWith("/admin")) {
+        const userEmail = user.email;
+        if (!userEmail || !WHITELIST_ADMIN_EMAILS.includes(userEmail)) {
+            return NextResponse.redirect(new URL("/dashboard", request.url));
         }
+    }
+
+    // Защита существующих маршрутов analytics и tools
+    if (
+        !user &&
+        (pathname.startsWith("/analytics") || pathname.startsWith("/tools"))
+    ) {
+        return NextResponse.redirect(new URL("/auth/login", request.url));
     }
 
     return supabaseResponse;
