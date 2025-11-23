@@ -37,6 +37,7 @@ export default function RegisterPage() {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           fio: fio,
         },
@@ -47,12 +48,19 @@ export default function RegisterPage() {
       setStatus(`Ошибка: ${error.message}`);
       setLoading(false);
     } else {
-      // Триггер handle_new_user создаст профиль автоматически
-      setStatus("Регистрация успешна! Перенаправляем...");
-      setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 1000);
+      // Проверяем, нужно ли подтверждение email
+      if (data.user && !data.session) {
+        // Email требует подтверждения
+        setStatus("Регистрация успешна! Проверьте почту и подтвердите email.");
+        setLoading(false);
+      } else if (data.session) {
+        // Email уже подтвержден или подтверждение отключено
+        setStatus("Регистрация успешна! Перенаправляем...");
+        setTimeout(() => {
+          router.push("/dashboard");
+          router.refresh();
+        }, 1000);
+      }
     }
   }
 

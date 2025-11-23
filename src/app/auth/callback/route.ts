@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const type = url.searchParams.get("type");
   
   if (error) {
     return NextResponse.redirect(new URL(`/auth/login?error=${error}`, url.origin));
@@ -26,7 +27,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/auth/login?error=no_session", url.origin));
   }
 
-  return NextResponse.redirect(new URL("/analytics/market-competitors", url.origin));
+  // Если это подтверждение email после регистрации, редиректим на dashboard
+  if (type === "signup" || type === "email") {
+    return NextResponse.redirect(new URL("/dashboard", url.origin));
+  }
+
+  // По умолчанию редиректим на dashboard
+  return NextResponse.redirect(new URL("/dashboard", url.origin));
 }
 
 
