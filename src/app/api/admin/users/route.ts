@@ -16,7 +16,25 @@ async function checkAdminAccess() {
   }
 
   const userEmail = user.email;
-  if (!userEmail || !WHITELIST_ADMIN_EMAILS.includes(userEmail)) {
+  let isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
+  
+  // Если не админ по email, проверяем поле is_admin из БД
+  if (!isAdmin && userEmail) {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+      
+      isAdmin = profile?.is_admin === true;
+    } catch (err) {
+      // Если поле is_admin отсутствует или ошибка, используем только проверку через email
+      console.error("Error checking is_admin:", err);
+    }
+  }
+  
+  if (!isAdmin) {
     return { error: "Forbidden", user: null };
   }
 
