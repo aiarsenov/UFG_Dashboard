@@ -45,13 +45,23 @@ export async function POST(request: Request) {
 
     const adminClient = createSupabaseAdminClient();
 
-    // Обновляем поле is_admin в таблице profiles
+    // Сначала проверяем, существует ли поле is_admin
+    // Пытаемся обновить поле is_admin
     const { error: updateError } = await adminClient
       .from("profiles")
       .update({ is_admin: isAdmin })
       .eq("id", userId);
 
     if (updateError) {
+      // Если ошибка связана с отсутствием поля is_admin
+      if (updateError.message?.includes('is_admin') || 
+          updateError.message?.includes('column') ||
+          updateError.message?.includes('schema cache')) {
+        return NextResponse.json({ 
+          error: "Поле is_admin не найдено в таблице profiles. Пожалуйста, выполните SQL-скрипт fix-add-is-admin-column.sql в Supabase.",
+          details: updateError.message
+        }, { status: 400 });
+      }
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
