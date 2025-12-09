@@ -53,13 +53,22 @@ export async function GET() {
     const users = authUsers.users.map((authUser) => {
       const profile = profiles?.find((p) => p.id === authUser.id);
       const userEmail = authUser.email || "";
+      const isAdminUser = WHITELIST_ADMIN_EMAILS.includes(userEmail);
+      
+      // Логирование для отладки (можно убрать после проверки)
+      if (userEmail === 'dmitry_kolesnikov@bizan.pro') {
+        console.log('Checking admin status for dmitry_kolesnikov@bizan.pro');
+        console.log('WHITELIST_ADMIN_EMAILS:', WHITELIST_ADMIN_EMAILS);
+        console.log('isAdmin:', isAdminUser);
+      }
+      
       return {
         id: authUser.id,
         email: userEmail,
         fio: profile?.fio || null,
         banned: profile?.banned || false,
         approved: profile?.approved || false,
-        isAdmin: WHITELIST_ADMIN_EMAILS.includes(userEmail),
+        isAdmin: isAdminUser,
         created_at: authUser.created_at,
       };
     });
