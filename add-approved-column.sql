@@ -9,3 +9,4 @@ ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE;
 -- SET approved = true 
 -- WHERE email = 'vasiliy_arsenov@bizan.pro';
 
+

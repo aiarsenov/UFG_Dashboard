@@ -70,3 +70,4 @@ SET
     fio = COALESCE(EXCLUDED.fio, 'Администратор'),
     banned = false;
 
+

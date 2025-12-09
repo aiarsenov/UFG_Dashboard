@@ -31,3 +31,4 @@ WHERE email = 'vasiliy_arsenov@bizan.pro';
 -- Проверка результата
 SELECT * FROM public.profiles WHERE email = 'vasiliy_arsenov@bizan.pro';
 
+

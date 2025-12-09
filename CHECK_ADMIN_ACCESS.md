@@ -133,3 +133,4 @@ WHERE u.email = 'vasiliy_arsenov@bizan.pro';
 Если запись есть, но `email_confirmed_at` NULL — нужно подтвердить email.
 Если `banned_until` не NULL — пользователь заблокирован.
 
+

@@ -94,6 +94,36 @@ export default function DashboardContent() {
     }
   }
 
+  async function handleChangeRole(userId: string, email: string, currentIsAdmin: boolean) {
+    const newRole = !currentIsAdmin;
+    const roleText = newRole ? "администратором" : "пользователем";
+    
+    if (!confirm(`Вы уверены, что хотите сделать пользователя ${email} ${roleText}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/admin/change-role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, isAdmin: newRole }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus(`Роль пользователя ${email} изменена на ${newRole ? "Админ" : "Пользователь"}!`);
+        loadUsers();
+      } else {
+        setStatus(`Ошибка: ${data.error || "Неизвестная ошибка"}`);
+      }
+    } catch (error) {
+      setStatus("Ошибка при изменении роли пользователя");
+    }
+  }
+
   return (
     <div className="space-y-6">
       {status && (
@@ -128,9 +158,21 @@ export default function DashboardContent() {
                     <td className="border border-gray-300 px-4 py-2">{user.email}</td>
                     <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
                     <td className="border border-gray-300 px-4 py-2">
-                      <span className={`px-2 py-1 rounded text-sm ${user.isAdmin ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}>
-                        {user.isAdmin ? "Админ" : "Пользователь"}
-                      </span>
+                      <select
+                        value={user.isAdmin ? "admin" : "user"}
+                        onChange={(e) => handleChangeRole(user.id, user.email, user.isAdmin)}
+                        className={`px-2 py-1 rounded text-sm border-0 cursor-pointer ${
+                          user.isAdmin ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                        }`}
+                        style={{ 
+                          appearance: "auto",
+                          WebkitAppearance: "menulist",
+                          MozAppearance: "menulist"
+                        }}
+                      >
+                        <option value="user">Пользователь</option>
+                        <option value="admin">Админ</option>
+                      </select>
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {new Date(user.created_at).toLocaleDateString("ru-RU")}

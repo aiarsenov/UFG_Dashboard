@@ -19,3 +19,4 @@ SET
 -- Проверка, что профиль создан
 SELECT * FROM public.profiles WHERE email = 'vasiliy_arsenov@bizan.pro';
 
+

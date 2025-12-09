@@ -5,11 +5,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT,
     banned BOOLEAN DEFAULT FALSE,
     approved BOOLEAN DEFAULT FALSE,
+    is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Добавляем поля banned и approved если таблица уже существует
+-- Добавляем поля banned, approved и is_admin если таблица уже существует
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
@@ -23,6 +24,12 @@ BEGIN
                    AND table_name = 'profiles' 
                    AND column_name = 'approved') THEN
         ALTER TABLE public.profiles ADD COLUMN approved BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'profiles' 
+                   AND column_name = 'is_admin') THEN
+        ALTER TABLE public.profiles ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
     END IF;
 END $$;
 
@@ -57,13 +64,14 @@ DECLARE
     admin_emails TEXT[] := ARRAY['vasiliy_arsenov@bizan.pro', 'dmitry_kolesnikov@bizan.pro']; -- Админские email
     is_admin BOOLEAN := NEW.email = ANY(admin_emails);
 BEGIN
-    INSERT INTO public.profiles (id, email, fio, approved, banned)
+    INSERT INTO public.profiles (id, email, fio, approved, banned, is_admin)
     VALUES (
         NEW.id,
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'fio', ''),
         is_admin, -- Админы автоматически одобрены
-        false     -- По умолчанию не заблокирован
+        false,    -- По умолчанию не заблокирован
+        is_admin  -- Устанавливаем is_admin
     );
     RETURN NEW;
 END;

@@ -43,7 +43,7 @@ export async function GET() {
     // Получаем все профили
     const { data: profiles, error: profilesError } = await adminClient
       .from("profiles")
-      .select("id, fio, email, banned, approved");
+      .select("id, fio, email, banned, approved, is_admin");
 
     if (profilesError) {
       return NextResponse.json({ error: profilesError.message }, { status: 500 });
@@ -53,14 +53,8 @@ export async function GET() {
     const users = authUsers.users.map((authUser) => {
       const profile = profiles?.find((p) => p.id === authUser.id);
       const userEmail = authUser.email || "";
-      const isAdminUser = WHITELIST_ADMIN_EMAILS.includes(userEmail);
-      
-      // Логирование для отладки (можно убрать после проверки)
-      if (userEmail === 'dmitry_kolesnikov@bizan.pro') {
-        console.log('Checking admin status for dmitry_kolesnikov@bizan.pro');
-        console.log('WHITELIST_ADMIN_EMAILS:', WHITELIST_ADMIN_EMAILS);
-        console.log('isAdmin:', isAdminUser);
-      }
+      // Проверяем админа: либо в БД (is_admin), либо в переменных окружения
+      const isAdminUser = profile?.is_admin || WHITELIST_ADMIN_EMAILS.includes(userEmail);
       
       return {
         id: authUser.id,
