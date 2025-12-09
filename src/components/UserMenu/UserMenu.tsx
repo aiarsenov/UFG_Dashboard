@@ -22,17 +22,42 @@ export default function UserMenu() {
 
             if (user) {
                 // Получаем профиль из таблицы profiles
-                const { data: profile } = await supabase
-                    .from("profiles")
-                    .select("fio, email")
-                    .eq("id", user.id)
-                    .single();
+                // Пытаемся получить is_admin, но если поля нет, используем только базовые поля
+                let profile: any = null;
+                try {
+                    const result = await supabase
+                        .from("profiles")
+                        .select("fio, email, is_admin")
+                        .eq("id", user.id)
+                        .single();
+                    
+                    if (!result.error) {
+                        profile = result.data;
+                    } else {
+                        // Если ошибка связана с отсутствием поля is_admin, пробуем без него
+                        const resultWithoutIsAdmin = await supabase
+                            .from("profiles")
+                            .select("fio, email")
+                            .eq("id", user.id)
+                            .single();
+                        
+                        if (!resultWithoutIsAdmin.error) {
+                            profile = resultWithoutIsAdmin.data;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching profile:", err);
+                }
 
                 const fio = profile?.fio || null;
                 const email = profile?.email || user.email || null;
 
                 setUserData({ fio, email });
-                setIsAdmin(isAdminEmail(email));
+                
+                // Проверяем админа: либо в БД (is_admin), либо через email
+                const isAdminFromDB = profile?.is_admin === true;
+                const isAdminFromEmail = isAdminEmail(email);
+                setIsAdmin(isAdminFromDB || isAdminFromEmail);
 
                 // Генерируем инициалы из ФИО
                 if (fio) {
