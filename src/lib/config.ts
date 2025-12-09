@@ -7,6 +7,7 @@ export const getAdminEmails = (): string[] => {
     return envAdminEmail.split(',').map(email => email.trim()).filter(Boolean);
   }
   // По умолчанию
-  return ["admin@example.com"];
+  return ["vasiliy_arsenov@bizan.pro", "dmitry_kolesnikov@bizan.pro"];
 };
+
 

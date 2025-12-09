@@ -19,6 +19,34 @@
         }
     }
 
+    &__dashboard {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 8px;
+        color: #ffffff;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
     &__logout {
         display: flex;
         align-items: center;

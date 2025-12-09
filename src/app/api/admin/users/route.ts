@@ -52,12 +52,14 @@ export async function GET() {
     // Объединяем данные
     const users = authUsers.users.map((authUser) => {
       const profile = profiles?.find((p) => p.id === authUser.id);
+      const userEmail = authUser.email || "";
       return {
         id: authUser.id,
-        email: authUser.email || "",
+        email: userEmail,
         fio: profile?.fio || null,
         banned: profile?.banned || false,
         approved: profile?.approved || false,
+        isAdmin: WHITELIST_ADMIN_EMAILS.includes(userEmail),
         created_at: authUser.created_at,
       };
     });

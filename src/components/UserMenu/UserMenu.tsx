@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { LogOut } from "lucide-react";
+import { LogOut, LayoutDashboard } from "lucide-react";
+import { isAdminEmail } from "@/lib/admin";
 
 import "./UserMenu.scss";
 
@@ -12,6 +13,7 @@ export default function UserMenu() {
     const router = useRouter();
     const [userData, setUserData] = useState<{ fio: string | null; email: string | null } | null>(null);
     const [initials, setInitials] = useState("ИИ");
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         async function fetchUserData() {
@@ -30,6 +32,7 @@ export default function UserMenu() {
                 const email = profile?.email || user.email || null;
 
                 setUserData({ fio, email });
+                setIsAdmin(isAdminEmail(email));
 
                 // Генерируем инициалы из ФИО
                 if (fio) {
@@ -73,6 +76,17 @@ export default function UserMenu() {
                 <div>{userData?.fio || "Пользователь"}</div>
                 <span>{userData?.email || "email@example.com"}</span>
             </div>
+
+            {isAdmin && (
+                <button
+                    onClick={() => router.push("/dashboard")}
+                    className="user-menu__dashboard"
+                    aria-label="Перейти в панель управления"
+                    title="Панель управления"
+                >
+                    <LayoutDashboard size={20} />
+                </button>
+            )}
 
             <button
                 onClick={handleSignOut}

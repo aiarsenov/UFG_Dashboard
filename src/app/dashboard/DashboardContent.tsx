@@ -11,6 +11,7 @@ interface User {
   created_at: string;
   banned: boolean;
   approved: boolean;
+  isAdmin: boolean;
 }
 
 export default function DashboardContent() {
@@ -114,6 +115,7 @@ export default function DashboardContent() {
                 <tr className="bg-gray-100">
                   <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">ФИО</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Роль</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Дата регистрации</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Одобрен</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Статус</th>
@@ -125,6 +127,11 @@ export default function DashboardContent() {
                   <tr key={user.id}>
                     <td className="border border-gray-300 px-4 py-2">{user.email}</td>
                     <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <span className={`px-2 py-1 rounded text-sm ${user.isAdmin ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}>
+                        {user.isAdmin ? "Админ" : "Пользователь"}
+                      </span>
+                    </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {new Date(user.created_at).toLocaleDateString("ru-RU")}
                     </td>
