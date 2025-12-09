@@ -74,7 +74,25 @@ export async function middleware(request: NextRequest) {
     // Проверка доступа к dashboard - только для админа
     if (user && pathname.startsWith("/dashboard")) {
         const userEmail = user.email;
-        if (!userEmail || !WHITELIST_ADMIN_EMAILS.includes(userEmail)) {
+        let isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
+        
+        // Если не админ по email, проверяем поле is_admin из БД
+        if (!isAdmin && userEmail) {
+            try {
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("is_admin")
+                    .eq("id", user.id)
+                    .single();
+                
+                isAdmin = profile?.is_admin === true;
+            } catch (err) {
+                // Если поле is_admin отсутствует, используем только проверку через email
+                console.error("Error checking is_admin:", err);
+            }
+        }
+        
+        if (!isAdmin) {
             return NextResponse.redirect(new URL("/", request.url));
         }
     }
@@ -82,7 +100,25 @@ export async function middleware(request: NextRequest) {
     // Проверка доступа к админке
     if (user && pathname.startsWith("/admin")) {
         const userEmail = user.email;
-        if (!userEmail || !WHITELIST_ADMIN_EMAILS.includes(userEmail)) {
+        let isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
+        
+        // Если не админ по email, проверяем поле is_admin из БД
+        if (!isAdmin && userEmail) {
+            try {
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("is_admin")
+                    .eq("id", user.id)
+                    .single();
+                
+                isAdmin = profile?.is_admin === true;
+            } catch (err) {
+                // Если поле is_admin отсутствует, используем только проверку через email
+                console.error("Error checking is_admin:", err);
+            }
+        }
+        
+        if (!isAdmin) {
             return NextResponse.redirect(new URL("/", request.url));
         }
     }
@@ -98,7 +134,22 @@ export async function middleware(request: NextRequest) {
     // Проверка одобрения пользователя для всех защищенных маршрутов (кроме админов)
     if (user && !pathname.startsWith("/auth/") && !pathname.startsWith("/dashboard") && !pathname.startsWith("/admin")) {
         const userEmail = user.email;
-        const isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
+        let isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
+        
+        // Если не админ по email, проверяем поле is_admin из БД
+        if (!isAdmin && userEmail) {
+            try {
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("is_admin")
+                    .eq("id", user.id)
+                    .single();
+                
+                isAdmin = profile?.is_admin === true;
+            } catch (err) {
+                // Если поле is_admin отсутствует, используем только проверку через email
+            }
+        }
         
         if (!isAdmin) {
             const { data: profile } = await supabase
