@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-
 import UserMenu from "../../UserMenu/UserMenu";
-
 import "./Header.scss";
 
-type HeaderProps = {
+type HeaderClientProps = {
     title?: string;
 };
 
-export function Header({ title }: HeaderProps) {
+export function HeaderClient({ title }: HeaderClientProps) {
     return (
         <header className="header">
             <div className="container header__container">
