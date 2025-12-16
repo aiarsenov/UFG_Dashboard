@@ -83,19 +83,12 @@ export function DatalensEmbed({
     const src = useMemo(() => {
         if (!token) return null;
 
-        // Если указан dashboardId, используем прямой URL на дашборд с токеном
-        if (dashboardId) {
-            // Формат: https://datalens.ru/{dashboardId}#dl_embed_token=...
-            return `https://datalens.ru/${dashboardId}#dl_embed_token=${encodeURIComponent(
-                token
-            )}`;
-        }
-
-        // Возвращаем старый рабочий формат для обратной совместимости
+        // Возвращаем старый рабочий формат, который точно работал
+        // Проблема была в том, что прямой URL на дашборд не работает с токеном встраивания
         return `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(
             token
         )}`;
-    }, [token, dashboardId]);
+    }, [token]);
 
     const resolvedHeight = useMemo(() => {
         if (typeof height === "number") {
