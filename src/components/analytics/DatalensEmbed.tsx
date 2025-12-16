@@ -26,8 +26,8 @@ export function DatalensEmbed({
                     const errorData = await response.json();
                     throw new Error(
                         errorData.error ||
-                            errorData.details ||
-                            "Failed to fetch token"
+                        errorData.details ||
+                        "Failed to fetch token"
                     );
                 }
                 const data = await response.json();
@@ -83,10 +83,18 @@ export function DatalensEmbed({
     const src = useMemo(() => {
         if (!token) return null;
 
+        if (dashboardId) {
+            // Используем прямую ссылку на дашборд с токеном
+            return `https://datalens.ru/${dashboardId}#dl_embed_token=${encodeURIComponent(
+                token
+            )}`;
+        }
+
+        // Fallback на старый способ, если dashboardId не указан
         return `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(
             token
         )}`;
-    }, [token]);
+    }, [token, dashboardId]);
 
     const resolvedHeight = useMemo(() => {
         if (typeof height === "number") {
@@ -119,9 +127,8 @@ export function DatalensEmbed({
                         background: "transparent",
                         width: "100%",
                     }}
-                    className={`transition-opacity duration-300 ${
-                        iframeReady ? "opacity-100" : "opacity-0"
-                    }`}
+                    className={`transition-opacity duration-300 ${iframeReady ? "opacity-100" : "opacity-0"
+                        }`}
                     allow="fullscreen"
                     title="DataLens Dashboard"
                     onLoad={handleIframeLoad}
