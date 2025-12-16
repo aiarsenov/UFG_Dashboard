@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isAdminEmail } from "@/lib/admin";
@@ -13,6 +13,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // При первой загрузке пробуем подставить сохранённый email
+  useEffect(() => {
+    try {
+      const savedEmail = window.localStorage.getItem("ufg-remember-email");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    } catch {
+      // localStorage может быть недоступен (SSR / приватный режим) — просто игнорируем
+    }
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,6 +46,17 @@ export default function LoginPage() {
     }
 
     if (data.user) {
+      // Обновляем localStorage в зависимости от флага "Запомнить меня"
+      try {
+        if (rememberMe) {
+          window.localStorage.setItem("ufg-remember-email", email);
+        } else {
+          window.localStorage.removeItem("ufg-remember-email");
+        }
+      } catch {
+        // Ничего страшного, если localStorage недоступен
+      }
+
       // Проверяем, является ли пользователь админом
       const isAdmin = isAdminEmail(data.user.email);
 
@@ -83,6 +108,15 @@ export default function LoginPage() {
             placeholder="••••••••"
             disabled={loading}
           />
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            disabled={loading}
+          />
+          <span>Запомнить меня на этом устройстве</span>
         </label>
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Вход..." : "Войти"}
