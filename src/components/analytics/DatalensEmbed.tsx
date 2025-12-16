@@ -83,18 +83,11 @@ export function DatalensEmbed({
     const src = useMemo(() => {
         if (!token) return null;
 
-        if (dashboardId) {
-            // Используем прямую ссылку на дашборд с токеном
-            return `https://datalens.ru/${dashboardId}#dl_embed_token=${encodeURIComponent(
-                token
-            )}`;
-        }
-
-        // Fallback на старый способ, если dashboardId не указан
+        // Возвращаем старый рабочий формат, который точно работал
         return `https://datalens.ru/embeds/dash#dl_embed_token=${encodeURIComponent(
             token
         )}`;
-    }, [token, dashboardId]);
+    }, [token]);
 
     const resolvedHeight = useMemo(() => {
         if (typeof height === "number") {
