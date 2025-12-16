@@ -10,3 +10,4 @@ ADD COLUMN IF NOT EXISTS approved BOOLEAN DEFAULT FALSE;
 -- WHERE email = 'vasiliy_arsenov@bizan.pro';
 
 
+

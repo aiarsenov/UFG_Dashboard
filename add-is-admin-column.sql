@@ -14,3 +14,4 @@ UPDATE public.profiles
 SET is_admin = true
 WHERE email IN ('vasiliy_arsenov@bizan.pro', 'dmitry_kolesnikov@bizan.pro');
 
+

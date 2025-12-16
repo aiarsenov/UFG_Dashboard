@@ -15,3 +15,4 @@ SELECT id, email, fio, is_admin, approved, banned
 FROM public.profiles 
 ORDER BY created_at DESC;
 
+

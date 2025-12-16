@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import UserMenu from "../../UserMenu/UserMenu";
+
+import UserMenuWrapper from "../../UserMenu/UserMenuWrapper";
+
 import "./Header.scss";
 
-type HeaderClientProps = {
+type HeaderProps = {
     title?: string;
 };
 
-export function HeaderClient({ title }: HeaderClientProps) {
+export function Header({ title }: HeaderProps) {
     return (
         <header className="header">
             <div className="container header__container">
@@ -32,9 +34,8 @@ export function HeaderClient({ title }: HeaderClientProps) {
                     </h1>
                 </div>
 
-                <UserMenu />
+                <UserMenuWrapper />
             </div>
         </header>
     );
 }
-

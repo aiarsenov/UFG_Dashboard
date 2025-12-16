@@ -34,7 +34,7 @@ export default function LoginPage() {
     if (data.user) {
       // Проверяем, является ли пользователь админом
       const isAdmin = isAdminEmail(data.user.email);
-      
+
       // Если не админ, проверяем одобрение
       if (!isAdmin) {
         const { data: profile } = await supabase

@@ -27,3 +27,4 @@ CREATE TRIGGER set_updated_at
     EXECUTE FUNCTION public.handle_updated_at();
 
 
+

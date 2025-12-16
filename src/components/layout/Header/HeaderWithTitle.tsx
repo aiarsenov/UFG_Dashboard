@@ -13,3 +13,4 @@ export function HeaderWithTitle() {
 
     return <HeaderClient title={title} />;
 }
+
