@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 
 type Props = {
     dashboardId?: string;
+    embedId?: string; // ID встраивания из DataLens
     width?: number | string;
     height?: number | string;
 };
 
 export function DatalensEmbed({
     dashboardId,
+    embedId,
     width = "100%",
     height = 800,
 }: Props) {
@@ -21,7 +23,12 @@ export function DatalensEmbed({
     useEffect(() => {
         async function fetchToken() {
             try {
-                const response = await fetch("/api/datalens/token");
+                // Передаем embedId через query параметр, если он указан
+                const url = embedId
+                    ? `/api/datalens/token?embedId=${encodeURIComponent(embedId)}`
+                    : "/api/datalens/token";
+
+                const response = await fetch(url);
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(
@@ -43,7 +50,7 @@ export function DatalensEmbed({
         }
 
         fetchToken();
-    }, []);
+    }, [embedId]);
 
     useEffect(() => {
         setIframeReady(false);

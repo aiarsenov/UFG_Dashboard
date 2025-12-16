@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import { SignJWT, importPKCS8 } from "jose";
 import forge from "node-forge";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const embedIdParam = searchParams.get("embedId");
+
   let privateKey = process.env.DATALENS_PRIVATE_KEY;
-  let embedId = process.env.DATALENS_EMBED_ID || "kw1mro94lpou5";
+  // Используем embedId из параметра запроса, если передан, иначе из переменной окружения
+  let embedId = embedIdParam || process.env.DATALENS_EMBED_ID || "kw1mro94lpou5";
 
   if (!privateKey) {
     return NextResponse.json(
@@ -21,7 +25,7 @@ export async function GET() {
     // Создаем JWT токен согласно документации DataLens
     // Алгоритм: PS256
     const now = Math.floor(Date.now() / 1000);
-    
+
     const payload = {
       embedId: embedId,
       iat: now,
@@ -32,7 +36,7 @@ export async function GET() {
 
     // Конвертируем RSA PRIVATE KEY (PKCS1) в PKCS8 для библиотеки jose
     let keyPem = privateKey;
-    
+
     // Если ключ в формате PKCS1, конвертируем в PKCS8
     if (keyPem.includes("BEGIN RSA PRIVATE KEY")) {
       const privateKeyForge = forge.pki.privateKeyFromPem(keyPem);
@@ -59,7 +63,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error generating DataLens token:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to generate token",
         details: error instanceof Error ? error.message : String(error)
       },
