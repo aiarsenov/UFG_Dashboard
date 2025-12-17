@@ -97,7 +97,7 @@ export default function DashboardContent() {
   async function handleChangeRole(userId: string, email: string, currentIsAdmin: boolean) {
     const newRole = !currentIsAdmin;
     const roleText = newRole ? "администратором" : "пользователем";
-    
+
     if (!confirm(`Вы уверены, что хотите сделать пользователя ${email} ${roleText}?`)) {
       return;
     }
@@ -124,6 +124,33 @@ export default function DashboardContent() {
     }
   }
 
+  async function handleDeleteUser(userId: string, email: string) {
+    if (!confirm(`Вы уверены, что хотите удалить пользователя ${email}? Это действие нельзя отменить.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/admin/delete-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus("Пользователь успешно удалён!");
+        loadUsers();
+      } else {
+        setStatus(`Ошибка: ${data.error || "Неизвестная ошибка"}`);
+      }
+    } catch (error) {
+      setStatus("Ошибка при удалении пользователя");
+    }
+  }
+
   return (
     <div className="space-y-6">
       {status && (
@@ -143,7 +170,6 @@ export default function DashboardContent() {
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">ФИО</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Роль</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Дата регистрации</th>
@@ -155,16 +181,14 @@ export default function DashboardContent() {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td className="border border-gray-300 px-4 py-2">{user.email}</td>
                     <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
                     <td className="border border-gray-300 px-4 py-2">
                       <select
                         value={user.isAdmin ? "admin" : "user"}
                         onChange={(e) => handleChangeRole(user.id, user.email, user.isAdmin)}
-                        className={`px-2 py-1 rounded text-sm border-0 cursor-pointer ${
-                          user.isAdmin ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
-                        }`}
-                        style={{ 
+                        className={`px-2 py-1 rounded text-sm border-0 cursor-pointer ${user.isAdmin ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                          }`}
+                        style={{
                           appearance: "auto",
                           WebkitAppearance: "menulist",
                           MozAppearance: "menulist"
@@ -205,6 +229,13 @@ export default function DashboardContent() {
                         >
                           {user.banned ? "Разблокировать" : "Заблокировать"}
                         </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                        >
+                          Удалить
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -217,4 +248,3 @@ export default function DashboardContent() {
     </div>
   );
 }
-

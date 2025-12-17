@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminEmails } from "@/lib/config";
 import DashboardContent from "./DashboardContent";
+import { HeaderClient } from "@/components/layout/Header/HeaderClient";
 
 const WHITELIST_ADMIN_EMAILS = getAdminEmails();
 
@@ -17,7 +18,7 @@ async function checkAdminAccess() {
 
   const userEmail = user.email;
   let isAdmin = userEmail && WHITELIST_ADMIN_EMAILS.includes(userEmail);
-  
+
   // Если не админ по email, проверяем поле is_admin из БД
   if (!isAdmin && userEmail) {
     try {
@@ -26,14 +27,14 @@ async function checkAdminAccess() {
         .select("is_admin")
         .eq("id", user.id)
         .single();
-      
+
       isAdmin = profile?.is_admin === true;
     } catch (err) {
       // Если поле is_admin отсутствует, используем только проверку через email
       console.error("Error checking is_admin:", err);
     }
   }
-  
+
   if (!isAdmin) {
     redirect("/");
   }
@@ -45,13 +46,15 @@ export default async function DashboardPage() {
   await checkAdminAccess();
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold mb-6">Дашборд - Управление пользователями</h1>
-          <DashboardContent />
+    <>
+      <HeaderClient title="Дашборд - Управление пользователями" />
+      <div className="min-h-screen bg-[#f0f2f5] p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <DashboardContent />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
