@@ -9,6 +9,9 @@ interface User {
   email: string;
   fio: string | null;
   created_at: string;
+  banned: boolean;
+  approved: boolean;
+  isAdmin: boolean;
 }
 
 export default function AdminContent() {
@@ -68,6 +71,34 @@ export default function AdminContent() {
       }
     } catch (error) {
       setStatus("Ошибка при создании пользователя");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleBanUser(userId: string, banned: boolean) {
+    setSubmitting(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch("/api/admin/ban-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, banned }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus(banned ? "Пользователь заблокирован" : "Пользователь разблокирован");
+        loadUsers();
+      } else {
+        setStatus(`Ошибка: ${data.error || "Неизвестная ошибка"}`);
+      }
+    } catch (error) {
+      setStatus("Ошибка при изменении статуса пользователя");
     } finally {
       setSubmitting(false);
     }
@@ -169,29 +200,71 @@ export default function AdminContent() {
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">ФИО</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Роль</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Дата регистрации</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Одобрен</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Статус</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td className="border border-gray-300 px-4 py-2">{user.email}</td>
                     <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {user.isAdmin ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded text-sm bg-blue-100 text-blue-800">
+                          Админ
+                        </span>
+                      ) : (
+                        <span className="text-gray-600">Пользователь</span>
+                      )}
+                    </td>
                     <td className="border border-gray-300 px-4 py-2">
                       {new Date(user.created_at).toLocaleDateString("ru-RU")}
                     </td>
                     <td className="border border-gray-300 px-4 py-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteUser(user.id, user.email)}
-                        disabled={submitting}
-                      >
-                        Удалить
-                      </Button>
+                      {user.approved ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded text-sm bg-green-100 text-green-800">
+                          Да
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded text-sm bg-red-100 text-red-800">
+                          Нет
+                        </span>
+                      )}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {user.banned ? (
+                        <span className="inline-flex items-center px-2 py-1 rounded text-sm bg-red-100 text-red-800">
+                          Заблокирован
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-1 rounded text-sm bg-green-100 text-green-800">
+                          Активен
+                        </span>
+                      )}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <div className="flex gap-2">
+                        <Button
+                          variant={user.banned ? "outline" : "destructive"}
+                          size="sm"
+                          onClick={() => handleBanUser(user.id, !user.banned)}
+                          disabled={submitting}
+                        >
+                          {user.banned ? "Разблокировать" : "Заблокировать"}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          disabled={submitting}
+                        >
+                          Удалить
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
