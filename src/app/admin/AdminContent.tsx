@@ -73,6 +73,38 @@ export default function AdminContent() {
     }
   }
 
+  async function handleDeleteUser(userId: string, userEmail: string) {
+    if (!confirm(`Вы уверены, что хотите удалить пользователя ${userEmail}? Это действие нельзя отменить.`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch("/api/admin/delete-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus("Пользователь успешно удалён!");
+        loadUsers();
+      } else {
+        setStatus(`Ошибка: ${data.error || "Неизвестная ошибка"}`);
+      }
+    } catch (error) {
+      setStatus("Ошибка при удалении пользователя");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -140,6 +172,7 @@ export default function AdminContent() {
                   <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">ФИО</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Дата регистрации</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Действия</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,6 +182,16 @@ export default function AdminContent() {
                     <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
                     <td className="border border-gray-300 px-4 py-2">
                       {new Date(user.created_at).toLocaleDateString("ru-RU")}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteUser(user.id, user.email)}
+                        disabled={submitting}
+                      >
+                        Удалить
+                      </Button>
                     </td>
                   </tr>
                 ))}
