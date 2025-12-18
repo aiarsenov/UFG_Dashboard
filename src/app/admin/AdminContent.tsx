@@ -200,6 +200,7 @@ export default function AdminContent() {
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
+                  <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">ФИО</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Роль</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Дата регистрации</th>
@@ -211,6 +212,7 @@ export default function AdminContent() {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
+                    <td className="border border-gray-300 px-4 py-2">{user.email}</td>
                     <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
                     <td className="border border-gray-300 px-4 py-2">
                       {user.isAdmin ? (
