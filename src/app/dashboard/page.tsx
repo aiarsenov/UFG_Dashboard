@@ -49,8 +49,8 @@ export default async function DashboardPage() {
     <>
       <HeaderClient title="Дашборд - Управление пользователями" />
       <div className="min-h-screen bg-[#f0f2f5] p-6">
-        <div className="max-w-[95%] xl:max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl p-6 shadow-sm">
+        <div className="w-full max-w-[98%] mx-auto">
+          <div className="bg-white rounded-xl p-6 shadow-sm w-full">
             <DashboardContent />
           </div>
         </div>

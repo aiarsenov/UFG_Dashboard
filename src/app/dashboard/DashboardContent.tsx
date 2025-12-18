@@ -166,24 +166,24 @@ export default function DashboardContent() {
         ) : users.length === 0 ? (
           <p className="text-gray-600">Пользователи не найдены</p>
         ) : (
-          <div className="overflow-x-auto -mx-6 px-6">
-            <table className="w-full border-collapse border border-gray-300 min-w-full">
+          <div className="w-full">
+            <table className="w-full border-collapse border border-gray-300 table-auto">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">ФИО</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Роль</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Дата регистрации</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Одобрен</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Статус</th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">Действия</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Email</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">ФИО</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Роль</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Дата регистрации</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Одобрен</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Статус</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left whitespace-nowrap">Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id}>
-                    <td className="border border-gray-300 px-4 py-2">{user.email}</td>
-                    <td className="border border-gray-300 px-4 py-2">{user.fio || "Не указано"}</td>
+                    <td className="border border-gray-300 px-4 py-2 break-words min-w-[200px]">{user.email}</td>
+                    <td className="border border-gray-300 px-4 py-2 break-words">{user.fio || "Не указано"}</td>
                     <td className="border border-gray-300 px-4 py-2">
                       <select
                         value={user.isAdmin ? "admin" : "user"}
