@@ -166,8 +166,8 @@ export default function DashboardContent() {
         ) : users.length === 0 ? (
           <p className="text-gray-600">Пользователи не найдены</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300">
+          <div className="overflow-x-auto -mx-6 px-6">
+            <table className="w-full border-collapse border border-gray-300 min-w-full">
               <thead>
                 <tr className="bg-gray-100">
                   <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
