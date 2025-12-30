@@ -16,6 +16,8 @@ export async function GET(request: Request) {
 
   // Если это восстановление пароля (recovery)
   if (type === "recovery") {
+    console.log("Recovery callback received:", { code: code ? "present" : "missing", token_hash: token_hash ? "present" : "missing" });
+    
     // Supabase может передавать токен в разных форматах:
     // 1. Как code - нужно обменять через exchangeCodeForSession
     // 2. Как token_hash - нужно использовать verifyOtp
@@ -24,11 +26,21 @@ export async function GET(request: Request) {
       // Обмениваем code на сессию
       const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       
-      if (exchangeError || !data.session) {
-        console.error("Password reset exchange error:", exchangeError);
+      if (exchangeError) {
+        console.error("Password reset exchange error:", {
+          message: exchangeError.message,
+          status: exchangeError.status,
+          code: exchangeError.code
+        });
         return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
       }
 
+      if (!data.session) {
+        console.error("Password reset: No session after exchange");
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+      }
+
+      console.log("Password reset: Session established successfully");
       // Сессия установлена, редиректим на страницу сброса пароля
       return NextResponse.redirect(new URL("/auth/reset", url.origin));
     } else if (token_hash) {
@@ -38,15 +50,26 @@ export async function GET(request: Request) {
         type: "recovery",
       });
 
-      if (verifyError || !data.session) {
-        console.error("Password reset verify error:", verifyError);
+      if (verifyError) {
+        console.error("Password reset verify error:", {
+          message: verifyError.message,
+          status: verifyError.status,
+          code: verifyError.code
+        });
         return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
       }
 
+      if (!data.session) {
+        console.error("Password reset: No session after verifyOtp");
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+      }
+
+      console.log("Password reset: Session established successfully via verifyOtp");
       // Сессия установлена, редиректим на страницу сброса пароля
       return NextResponse.redirect(new URL("/auth/reset", url.origin));
     } else {
       // Если нет токена, редиректим на страницу восстановления с ошибкой
+      console.error("Password reset: No token provided (neither code nor token_hash)");
       return NextResponse.redirect(new URL("/auth/reset?error=no_token", url.origin));
     }
   }
