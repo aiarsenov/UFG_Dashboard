@@ -62,7 +62,8 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
 
     // Если пользователь залогинен, редиректим с /auth/* на главную
-    if (user && pathname.startsWith("/auth/")) {
+    // НО исключаем /auth/reset - там пользователь должен иметь возможность сбросить пароль
+    if (user && pathname.startsWith("/auth/") && pathname !== "/auth/reset") {
         return NextResponse.redirect(new URL("/", request.url));
     }
 

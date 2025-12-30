@@ -39,11 +39,25 @@ export async function GET(request: Request) {
     forwardedHost: request.headers.get("x-forwarded-host")
   });
 
+  const supabase = await createSupabaseServerClient();
+
+  // Если есть ошибка, но это recovery и уже была успешная попытка, игнорируем
   if (error) {
+    // Если это recovery и ошибка access_denied, возможно это повторный запрос после успешного обмена
+    // Проверяем, есть ли уже активная сессия
+    if (type === "recovery" && error === "access_denied") {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        console.log("Session exists despite error, redirecting to reset page", {
+          userId: session.user?.id,
+          email: session.user?.email
+        });
+        return NextResponse.redirect(new URL("/auth/reset", siteUrl));
+      }
+    }
+    console.log("Redirecting to login with error:", error);
     return NextResponse.redirect(new URL(`/auth/login?error=${error}`, siteUrl));
   }
-
-  const supabase = await createSupabaseServerClient();
 
   // Если это восстановление пароля (recovery)
   if (type === "recovery") {
@@ -81,11 +95,11 @@ export async function GET(request: Request) {
         userId: data.session.user?.id,
         email: data.session.user?.email
       });
-      
+
       // Cookies должны быть установлены автоматически через createSupabaseServerClient
       // Создаем response с редиректом - cookies уже установлены через cookieStore
       const redirectResponse = NextResponse.redirect(new URL("/auth/reset", siteUrl));
-      
+
       // Сессия установлена, редиректим на страницу сброса пароля
       return redirectResponse;
     } else if (token_hash) {
