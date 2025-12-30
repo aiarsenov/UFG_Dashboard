@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       const userFio = profile?.fio || "";
 
       // Отправляем email через API route
-      const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "https://ufg-dashboard.vercel.app"}/api/email/send-approval`, {
+      const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "https://chain.bizan.pro"}/api/email/send-approval`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

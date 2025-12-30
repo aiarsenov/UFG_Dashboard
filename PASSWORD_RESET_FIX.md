@@ -28,10 +28,10 @@
 ### 1. URL Configuration
 
 1. Перейдите в **Authentication** → **URL Configuration**
-2. В поле **"Site URL"** укажите: `https://ufg-dashboard.vercel.app` (или ваш домен)
+2. В поле **"Site URL"** укажите: `https://chain.bizan.pro`
 3. В поле **"Redirect URLs"** добавьте:
-   - `https://ufg-dashboard.vercel.app/auth/callback`
-   - `https://ufg-dashboard.vercel.app/auth/reset`
+   - `https://chain.bizan.pro/auth/callback`
+   - `https://chain.bizan.pro/auth/reset`
    - `http://localhost:3000/auth/callback` (для локальной разработки)
    - `http://localhost:3000/auth/reset` (для локальной разработки)
 4. Нажмите **"Save"**

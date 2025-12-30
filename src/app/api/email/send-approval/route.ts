@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createSupabaseAdminClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ufg-dashboard.vercel.app";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://chain.bizan.pro";
 
     // Отправляем email через Supabase Admin API
     // Используем generateLink для отправки письма с информацией об одобрении
