@@ -8,7 +8,13 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type");
   const token_hash = url.searchParams.get("token_hash");
   const token = url.searchParams.get("token"); // PKCE token из Supabase verify URL
-
+  
+  // Используем переменную окружения или определяем origin из заголовков
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                  request.headers.get("x-forwarded-host") ? 
+                    `https://${request.headers.get("x-forwarded-host")}` : 
+                    url.origin;
+  
   // Логируем все параметры для отладки
   console.log("Callback received:", {
     code: code ? "present" : "missing",
@@ -16,11 +22,14 @@ export async function GET(request: Request) {
     token_hash: token_hash ? "present" : "missing",
     type,
     error,
-    fullUrl: url.toString()
+    fullUrl: url.toString(),
+    siteUrl,
+    origin: url.origin,
+    forwardedHost: request.headers.get("x-forwarded-host")
   });
 
   if (error) {
-    return NextResponse.redirect(new URL(`/auth/login?error=${error}`, url.origin));
+    return NextResponse.redirect(new URL(`/auth/login?error=${error}`, siteUrl));
   }
 
   const supabase = await createSupabaseServerClient();
@@ -29,7 +38,7 @@ export async function GET(request: Request) {
   if (type === "recovery") {
     console.log("=== RECOVERY CALLBACK START ===");
     console.log("URL params:", { code, token, token_hash, type, error });
-    
+
     // Supabase может передавать токен в разных форматах:
     // 1. Как code - нужно обменять через exchangeCodeForSession
     // 2. Как token (PKCE) - нужно обменять через exchangeCodeForSession
@@ -49,17 +58,17 @@ export async function GET(request: Request) {
           status: exchangeError.status,
           code: exchangeError.code
         });
-        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", siteUrl));
       }
 
       if (!data.session) {
         console.error("Password reset: No session after exchange");
-        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", siteUrl));
       }
 
       console.log("Password reset: Session established successfully");
       // Сессия установлена, редиректим на страницу сброса пароля
-      return NextResponse.redirect(new URL("/auth/reset", url.origin));
+      return NextResponse.redirect(new URL("/auth/reset", siteUrl));
     } else if (token_hash) {
       console.log("WARNING: Using deprecated verifyOtp with token_hash");
       console.log("Token hash:", token_hash.substring(0, 20) + "...");
@@ -75,46 +84,46 @@ export async function GET(request: Request) {
           status: verifyError.status,
           code: verifyError.code
         });
-        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", siteUrl));
       }
 
       if (!data.session) {
         console.error("Password reset: No session after verifyOtp");
-        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", siteUrl));
       }
 
       console.log("Password reset: Session established successfully via verifyOtp");
       // Сессия установлена, редиректим на страницу сброса пароля
-      return NextResponse.redirect(new URL("/auth/reset", url.origin));
+      return NextResponse.redirect(new URL("/auth/reset", siteUrl));
     } else {
       // Если нет токена, редиректим на страницу восстановления с ошибкой
       console.error("Password reset: No token provided (neither code nor token_hash)");
-      return NextResponse.redirect(new URL("/auth/reset?error=no_token", url.origin));
+      return NextResponse.redirect(new URL("/auth/reset?error=no_token", siteUrl));
     }
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL("/auth/login?error=no_code", url.origin));
+    return NextResponse.redirect(new URL("/auth/login?error=no_code", siteUrl));
   }
 
   const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
     console.error("Auth exchange error:", exchangeError);
-    return NextResponse.redirect(new URL(`/auth/login?error=${encodeURIComponent(exchangeError.message)}`, url.origin));
+    return NextResponse.redirect(new URL(`/auth/login?error=${encodeURIComponent(exchangeError.message)}`, siteUrl));
   }
 
   if (!data.session) {
-    return NextResponse.redirect(new URL("/auth/login?error=no_session", url.origin));
+    return NextResponse.redirect(new URL("/auth/login?error=no_session", siteUrl));
   }
 
   // Если это подтверждение email после регистрации, редиректим на главную
   if (type === "signup" || type === "email") {
-    return NextResponse.redirect(new URL("/", url.origin));
+    return NextResponse.redirect(new URL("/", siteUrl));
   }
 
   // По умолчанию редиректим на главную
-  return NextResponse.redirect(new URL("/", url.origin));
+  return NextResponse.redirect(new URL("/", siteUrl));
 }
 
 
