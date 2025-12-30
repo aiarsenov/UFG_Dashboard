@@ -6,12 +6,29 @@
 {"code":403,"error_code":"otp_expired","msg":"Email link is invalid or has expired"}
 ```
 
-## Решение
+## Исправления в коде (выполнено)
 
-### 1. Настройка в Supabase Dashboard
+### 1. Улучшена обработка токенов в `/auth/callback/route.ts`
+- Добавлена поддержка обмена `code` на сессию через `exchangeCodeForSession`
+- Улучшена обработка `token_hash` через `verifyOtp`
+- Правильная обработка обоих форматов токенов, которые может отправлять Supabase
+
+### 2. Улучшена страница `/auth/reset/page.tsx`
+- Добавлена обработка токенов из hash-фрагмента URL
+- Добавлена проверка query параметров и редирект на callback при необходимости
+- Улучшена обработка ошибок и сообщений пользователю
+
+### 3. Улучшен API route `/api/auth/reset-password/route.ts`
+- Добавлена поддержка обмена `code` на сессию
+- Улучшена обработка ошибок с детальными сообщениями
+- Добавлено логирование для отладки
+
+## Настройка в Supabase Dashboard (требуется)
+
+### 1. URL Configuration
 
 1. Перейдите в **Authentication** → **URL Configuration**
-2. В поле **"Site URL"** укажите: `https://ufg-dashboard.vercel.app`
+2. В поле **"Site URL"** укажите: `https://ufg-dashboard.vercel.app` (или ваш домен)
 3. В поле **"Redirect URLs"** добавьте:
    - `https://ufg-dashboard.vercel.app/auth/callback`
    - `https://ufg-dashboard.vercel.app/auth/reset`
@@ -34,25 +51,23 @@
    ```
    {{ .ConfirmationURL }}
    ```
-4. Или используйте кастомный URL:
-   ```
-   https://ufg-dashboard.vercel.app/auth/callback?type=recovery&token_hash={{ .TokenHash }}
-   ```
+   Это автоматически подставит правильный URL с токеном
 
-## Альтернативное решение
+## Как это работает
 
-Если проблема сохраняется, можно использовать прямой обмен токена через API:
-
-1. Supabase отправляет ссылку на свой домен: `https://wnjvicblfqdpjylhcpmg.supabase.co/auth/v1/verify?...`
-2. Эта ссылка должна автоматически редиректить на указанный `redirect_to` URL
-3. Убедитесь, что в настройках Supabase правильно указан `redirect_to`
+1. Пользователь запрашивает восстановление пароля на `/auth/forgot`
+2. Supabase отправляет письмо со ссылкой
+3. Ссылка ведет на Supabase домен, который редиректит на `/auth/callback?type=recovery&code=...`
+4. Callback route обменивает `code` на сессию и редиректит на `/auth/reset`
+5. Страница reset проверяет сессию и позволяет установить новый пароль
 
 ## Проверка
 
-После настройки:
+После настройки в Supabase:
 1. Запросите восстановление пароля на `/auth/forgot`
-2. Проверьте письмо - ссылка должна вести на ваш домен
+2. Проверьте письмо - ссылка должна вести на ваш домен через Supabase
 3. Перейдите по ссылке - должна открыться форма сброса пароля
+4. Установите новый пароль - должно работать без ошибок
 
 
 

@@ -4,9 +4,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { token_hash, access_token, refresh_token } = body;
+    const { token_hash, access_token, refresh_token, code } = body;
 
-    if (!token_hash && !access_token) {
+    if (!token_hash && !access_token && !code) {
       return NextResponse.json(
         { error: "Токен не предоставлен" },
         { status: 400 }
@@ -14,6 +14,21 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createSupabaseServerClient();
+
+    // Если есть code, обмениваем его на сессию
+    if (code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      
+      if (error || !data.session) {
+        console.error("Reset password exchange error:", error);
+        return NextResponse.json(
+          { error: error?.message || "Недействительный токен или токен истек" },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({ success: true, session: data.session });
+    }
 
     // Если есть access_token, устанавливаем сессию напрямую
     if (access_token && refresh_token) {
@@ -23,8 +38,9 @@ export async function POST(request: Request) {
       });
 
       if (error || !data.session) {
+        console.error("Reset password setSession error:", error);
         return NextResponse.json(
-          { error: "Недействительный токен или токен истек" },
+          { error: error?.message || "Недействительный токен или токен истек" },
           { status: 400 }
         );
       }
@@ -40,8 +56,9 @@ export async function POST(request: Request) {
       });
 
       if (error || !data.session) {
+        console.error("Reset password verifyOtp error:", error);
         return NextResponse.json(
-          { error: "Недействительный токен или токен истек" },
+          { error: error?.message || "Недействительный токен или токен истек" },
           { status: 400 }
         );
       }
@@ -54,6 +71,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   } catch (error: any) {
+    console.error("Reset password API error:", error);
     return NextResponse.json(
       { error: error.message || "Внутренняя ошибка сервера" },
       { status: 500 }

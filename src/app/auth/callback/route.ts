@@ -16,17 +16,30 @@ export async function GET(request: Request) {
 
   // Если это восстановление пароля (recovery)
   if (type === "recovery") {
-    // Проверяем token_hash в query параметрах или в code
-    const recoveryToken = token_hash || code;
+    // Supabase может передавать токен в разных форматах:
+    // 1. Как code - нужно обменять через exchangeCodeForSession
+    // 2. Как token_hash - нужно использовать verifyOtp
     
-    if (recoveryToken) {
+    if (code) {
+      // Обмениваем code на сессию
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      
+      if (exchangeError || !data.session) {
+        console.error("Password reset exchange error:", exchangeError);
+        return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
+      }
+
+      // Сессия установлена, редиректим на страницу сброса пароля
+      return NextResponse.redirect(new URL("/auth/reset", url.origin));
+    } else if (token_hash) {
+      // Используем verifyOtp для token_hash
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        token_hash: recoveryToken,
+        token_hash: token_hash,
         type: "recovery",
       });
 
       if (verifyError || !data.session) {
-        console.error("Password reset error:", verifyError);
+        console.error("Password reset verify error:", verifyError);
         return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", url.origin));
       }
 

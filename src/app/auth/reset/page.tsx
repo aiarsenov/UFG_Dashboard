@@ -33,53 +33,71 @@ function ResetForm() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsValidSession(true);
-      } else {
-        // Проверяем hash в URL (Supabase передает токен в hash)
-        const hash = window.location.hash;
-        if (hash) {
-          // Парсим hash для получения токена
-          const params = new URLSearchParams(hash.substring(1));
-          const access_token = params.get("access_token");
-          const token_hash = params.get("token_hash");
-          const refresh_token = params.get("refresh_token");
-          const type = params.get("type");
-          
-          if (type === "recovery") {
-            // Отправляем токен на сервер для обработки
-            try {
-              const response = await fetch("/api/auth/reset-password", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  access_token,
-                  token_hash,
-                  refresh_token,
-                }),
-              });
+        return;
+      }
 
-              const data = await response.json();
+      // Проверяем hash в URL (Supabase может передавать токен в hash при прямом редиректе)
+      const hash = window.location.hash;
+      if (hash) {
+        // Парсим hash для получения токена
+        const params = new URLSearchParams(hash.substring(1));
+        const access_token = params.get("access_token");
+        const token_hash = params.get("token_hash");
+        const refresh_token = params.get("refresh_token");
+        const type = params.get("type");
+        
+        if (type === "recovery") {
+          // Отправляем токен на сервер для обработки
+          try {
+            const response = await fetch("/api/auth/reset-password", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                access_token,
+                token_hash,
+                refresh_token,
+              }),
+            });
 
-              if (response.ok && data.success) {
-                // Сессия установлена на сервере, обновляем на клиенте
-                await supabase.auth.getSession();
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+              // Сессия установлена на сервере, обновляем на клиенте
+              const { data: { session: newSession } } = await supabase.auth.getSession();
+              if (newSession) {
                 setIsValidSession(true);
                 // Очищаем hash из URL
                 window.history.replaceState(null, "", window.location.pathname);
               } else {
-                setStatus(data.error || "Ссылка недействительна или истекла. Запросите новую ссылку.");
+                setStatus("Не удалось установить сессию. Запросите новую ссылку.");
               }
-            } catch (err) {
-              console.error("Reset password error:", err);
-              setStatus("Ошибка при обработке ссылки. Запросите новую ссылку.");
+            } else {
+              setStatus(data.error || "Ссылка недействительна или истекла. Запросите новую ссылку.");
             }
-          } else if (!error) {
-            setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
+          } catch (err) {
+            console.error("Reset password error:", err);
+            setStatus("Ошибка при обработке ссылки. Запросите новую ссылку.");
           }
-        } else if (!error) {
-          setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
+          return;
         }
+      }
+
+      // Если нет сессии и нет токена в hash, проверяем query параметры
+      const code = searchParams.get("code");
+      const tokenHash = searchParams.get("token_hash");
+      
+      if (code || tokenHash) {
+        // Редиректим на callback для обработки
+        const callbackUrl = `/auth/callback?type=recovery${code ? `&code=${code}` : ''}${tokenHash ? `&token_hash=${tokenHash}` : ''}`;
+        router.push(callbackUrl);
+        return;
+      }
+
+      // Если нет ни сессии, ни токена, показываем ошибку
+      if (!error) {
+        setStatus("Ссылка для сброса пароля не найдена. Запросите новую ссылку.");
       }
     }
     checkSession();
