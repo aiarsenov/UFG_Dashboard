@@ -16,8 +16,10 @@ export default function ForgotPage() {
     setStatus(null);
 
     const supabase = createSupabaseBrowserClient();
+    // Используем переменную окружения или текущий origin
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      redirectTo: `${siteUrl}/auth/callback?type=recovery`,
     });
 
     if (error) {

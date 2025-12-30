@@ -7,7 +7,18 @@ export async function GET(request: Request) {
   const error = url.searchParams.get("error");
   const type = url.searchParams.get("type");
   const token_hash = url.searchParams.get("token_hash");
+  const token = url.searchParams.get("token"); // PKCE token из Supabase verify URL
   
+  // Логируем все параметры для отладки
+  console.log("Callback received:", {
+    code: code ? "present" : "missing",
+    token: token ? "present" : "missing",
+    token_hash: token_hash ? "present" : "missing",
+    type,
+    error,
+    fullUrl: url.toString()
+  });
+
   if (error) {
     return NextResponse.redirect(new URL(`/auth/login?error=${error}`, url.origin));
   }
@@ -16,16 +27,18 @@ export async function GET(request: Request) {
 
   // Если это восстановление пароля (recovery)
   if (type === "recovery") {
-    console.log("Recovery callback received:", { code: code ? "present" : "missing", token_hash: token_hash ? "present" : "missing" });
-    
     // Supabase может передавать токен в разных форматах:
     // 1. Как code - нужно обменять через exchangeCodeForSession
-    // 2. Как token_hash - нужно использовать verifyOtp
-    
-    if (code) {
-      // Обмениваем code на сессию
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-      
+    // 2. Как token (PKCE) - нужно обменять через exchangeCodeForSession
+    // 3. Как token_hash - нужно использовать verifyOtp
+
+    // Используем code или token (PKCE токен работает как code)
+    const recoveryCode = code || token;
+
+    if (recoveryCode) {
+      // Обмениваем code/token на сессию
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(recoveryCode);
+
       if (exchangeError) {
         console.error("Password reset exchange error:", {
           message: exchangeError.message,
@@ -73,13 +86,13 @@ export async function GET(request: Request) {
       return NextResponse.redirect(new URL("/auth/reset?error=no_token", url.origin));
     }
   }
-  
+
   if (!code) {
     return NextResponse.redirect(new URL("/auth/login?error=no_code", url.origin));
   }
 
   const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-  
+
   if (exchangeError) {
     console.error("Auth exchange error:", exchangeError);
     return NextResponse.redirect(new URL(`/auth/login?error=${encodeURIComponent(exchangeError.message)}`, url.origin));
