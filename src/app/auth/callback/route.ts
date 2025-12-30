@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type");
   const token_hash = url.searchParams.get("token_hash");
   const token = url.searchParams.get("token"); // PKCE token из Supabase verify URL
-  
+
   // Логируем все параметры для отладки
   console.log("Callback received:", {
     code: code ? "present" : "missing",
