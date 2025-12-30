@@ -98,9 +98,32 @@ function ResetForm() {
       const code = searchParams.get("code");
       const tokenHash = searchParams.get("token_hash");
       
-      if (code || tokenHash) {
-        // Редиректим на callback для обработки
-        const callbackUrl = `/auth/callback?type=recovery${code ? `&code=${code}` : ''}${tokenHash ? `&token_hash=${tokenHash}` : ''}`;
+      if (code) {
+        // Если есть code, пытаемся обменять его на сессию через клиентский клиент
+        // Это нужно для PKCE токенов, где code verifier хранится в браузере
+        console.log("Attempting to exchange code on client side:", code.substring(0, 20) + "...");
+        try {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (exchangeError) {
+            console.error("Client-side exchange error:", exchangeError);
+            setStatus("Ссылка недействительна или истекла. Запросите новую ссылку.");
+          } else if (data.session) {
+            console.log("Session established on client side");
+            setIsValidSession(true);
+            // Очищаем code из URL
+            window.history.replaceState(null, "", window.location.pathname);
+          }
+        } catch (err) {
+          console.error("Error exchanging code:", err);
+          setStatus("Ошибка при обработке ссылки. Запросите новую ссылку.");
+        }
+        return;
+      }
+      
+      if (tokenHash) {
+        // Редиректим на callback для обработки token_hash
+        const callbackUrl = `/auth/callback?type=recovery&token_hash=${tokenHash}`;
         router.push(callbackUrl);
         return;
       }

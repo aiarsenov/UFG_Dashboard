@@ -74,6 +74,15 @@ export async function GET(request: Request) {
 
     if (recoveryCode) {
       console.log("Using exchangeCodeForSession with:", recoveryCode.substring(0, 20) + "...");
+      
+      // Для PKCE токенов нужен code verifier, который хранится в браузере
+      // Если это PKCE токен (начинается с pkce_ или это code без verifier), 
+      // редиректим на reset page, где клиент обработает токен
+      if (token && token.startsWith('pkce_')) {
+        console.log("PKCE token detected, redirecting to reset page for client-side handling");
+        return NextResponse.redirect(new URL(`/auth/reset?code=${recoveryCode}&type=recovery`, siteUrl));
+      }
+      
       // Обмениваем code/token на сессию
       const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(recoveryCode);
 
@@ -83,6 +92,13 @@ export async function GET(request: Request) {
           status: exchangeError.status,
           code: exchangeError.code
         });
+        
+        // Если ошибка связана с PKCE (нужен code verifier), редиректим на reset page
+        if (exchangeError.message?.includes('code verifier') || exchangeError.code === 'validation_failed') {
+          console.log("PKCE code verifier required, redirecting to reset page");
+          return NextResponse.redirect(new URL(`/auth/reset?code=${recoveryCode}&type=recovery`, siteUrl));
+        }
+        
         return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", siteUrl));
       }
 
