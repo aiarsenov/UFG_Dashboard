@@ -8,13 +8,24 @@ export async function GET(request: Request) {
   const type = url.searchParams.get("type");
   const token_hash = url.searchParams.get("token_hash");
   const token = url.searchParams.get("token"); // PKCE token из Supabase verify URL
-  
+
   // Используем переменную окружения или определяем origin из заголовков
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-                  request.headers.get("x-forwarded-host") ? 
-                    `https://${request.headers.get("x-forwarded-host")}` : 
-                    url.origin;
+  let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   
+  if (!siteUrl) {
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    if (forwardedHost) {
+      siteUrl = `https://${forwardedHost}`;
+    } else {
+      // Если это localhost в URL, используем production URL по умолчанию
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        siteUrl = 'https://chain.bizan.pro';
+      } else {
+        siteUrl = url.origin;
+      }
+    }
+  }
+
   // Логируем все параметры для отладки
   console.log("Callback received:", {
     code: code ? "present" : "missing",

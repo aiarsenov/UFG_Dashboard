@@ -16,8 +16,23 @@ export default function ForgotPage() {
     setStatus(null);
 
     const supabase = createSupabaseBrowserClient();
-    // Используем переменную окружения или текущий origin
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    // Используем переменную окружения или определяем из window.location
+    // Важно: NEXT_PUBLIC_SITE_URL должен быть установлен на сервере
+    let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    
+    // Если переменная не установлена, используем текущий hostname (но не localhost)
+    if (!siteUrl) {
+      const currentOrigin = window.location.origin;
+      // Если это localhost, используем production URL по умолчанию
+      if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
+        siteUrl = 'https://chain.bizan.pro';
+      } else {
+        siteUrl = currentOrigin;
+      }
+    }
+    
+    console.log('Password reset redirectTo:', `${siteUrl}/auth/callback?type=recovery`);
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${siteUrl}/auth/callback?type=recovery`,
     });
