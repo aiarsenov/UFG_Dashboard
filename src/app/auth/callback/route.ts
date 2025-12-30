@@ -27,15 +27,19 @@ export async function GET(request: Request) {
 
   // Если это восстановление пароля (recovery)
   if (type === "recovery") {
+    console.log("=== RECOVERY CALLBACK START ===");
+    console.log("URL params:", { code, token, token_hash, type, error });
+    
     // Supabase может передавать токен в разных форматах:
     // 1. Как code - нужно обменять через exchangeCodeForSession
     // 2. Как token (PKCE) - нужно обменять через exchangeCodeForSession
-    // 3. Как token_hash - нужно использовать verifyOtp
+    // 3. Как token_hash - нужно использовать verifyOtp (НО ЭТО УСТАРЕВШИЙ МЕТОД)
 
     // Используем code или token (PKCE токен работает как code)
     const recoveryCode = code || token;
 
     if (recoveryCode) {
+      console.log("Using exchangeCodeForSession with:", recoveryCode.substring(0, 20) + "...");
       // Обмениваем code/token на сессию
       const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(recoveryCode);
 
@@ -57,7 +61,9 @@ export async function GET(request: Request) {
       // Сессия установлена, редиректим на страницу сброса пароля
       return NextResponse.redirect(new URL("/auth/reset", url.origin));
     } else if (token_hash) {
-      // Используем verifyOtp для token_hash
+      console.log("WARNING: Using deprecated verifyOtp with token_hash");
+      console.log("Token hash:", token_hash.substring(0, 20) + "...");
+      // Используем verifyOtp для token_hash (устаревший метод, может не работать)
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         token_hash: token_hash,
         type: "recovery",
