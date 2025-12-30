@@ -30,11 +30,21 @@ function ResetForm() {
     // Проверяем, есть ли активная сессия
     async function checkSession() {
       const supabase = createSupabaseBrowserClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Сначала проверяем сессию
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session check error:", sessionError);
+      }
+      
       if (session) {
+        console.log("Session found, user:", session.user?.email);
         setIsValidSession(true);
         return;
       }
+      
+      console.log("No session found, checking for tokens in URL...");
 
       // Проверяем hash в URL (Supabase может передавать токен в hash при прямом редиректе)
       const hash = window.location.hash;

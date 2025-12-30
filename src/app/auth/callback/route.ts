@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   // Используем переменную окружения или определяем origin из заголовков
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  
+
   if (!siteUrl) {
     const forwardedHost = request.headers.get("x-forwarded-host");
     if (forwardedHost) {
@@ -77,9 +77,17 @@ export async function GET(request: Request) {
         return NextResponse.redirect(new URL("/auth/reset?error=invalid_or_expired", siteUrl));
       }
 
-      console.log("Password reset: Session established successfully");
+      console.log("Password reset: Session established successfully", {
+        userId: data.session.user?.id,
+        email: data.session.user?.email
+      });
+      
+      // Cookies должны быть установлены автоматически через createSupabaseServerClient
+      // Создаем response с редиректом - cookies уже установлены через cookieStore
+      const redirectResponse = NextResponse.redirect(new URL("/auth/reset", siteUrl));
+      
       // Сессия установлена, редиректим на страницу сброса пароля
-      return NextResponse.redirect(new URL("/auth/reset", siteUrl));
+      return redirectResponse;
     } else if (token_hash) {
       console.log("WARNING: Using deprecated verifyOtp with token_hash");
       console.log("Token hash:", token_hash.substring(0, 20) + "...");
