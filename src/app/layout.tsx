@@ -11,11 +11,11 @@ export const metadata: Metadata = {
     description: "UFG Analytics Dashboard",
     icons: {
         icon: [
-            { url: "/favicon.ico?v=2", sizes: "any" },
-            { url: "/favicon.ico?v=2", type: "image/x-icon" },
+            { url: "/favicon.ico?v=3", sizes: "any" },
+            { url: "/icon.png?v=3", type: "image/png" },
         ],
-        shortcut: "/favicon.ico?v=2",
-        apple: "/favicon.ico?v=2",
+        shortcut: "/favicon.ico?v=3",
+        apple: "/apple-touch-icon.png?v=3",
     },
 };
 
